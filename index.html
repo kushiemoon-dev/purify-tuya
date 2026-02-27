@@ -16,10 +16,53 @@
 
   <!-- Connection status -->
   <header class="status-bar">
-    <span class="app-title">Purify</span>
-    <span class="connection-dot" :class="connected ? 'online' : 'offline'"
-          :title="connected ? 'Connecte' : 'Deconnecte'"></span>
+    <div class="status-bar__left">
+      <svg class="status-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+        <path d="M8 12a4 4 0 0 0 8 0"/>
+        <line x1="12" y1="2" x2="12" y2="6"/>
+        <line x1="12" y1="18" x2="12" y2="22"/>
+      </svg>
+      <span class="app-title">Purify</span>
+    </div>
+    <div class="status-bar__right">
+      <template x-if="s">
+        <span class="status-text" :class="s.switch ? 'status-on' : 'status-off'"
+              x-text="s.switch ? 'En marche' : 'Eteint'"></span>
+      </template>
+      <!-- Theme toggle -->
+      <button class="icon-btn" @click="$store.theme.cycle()" title="Theme">
+        <template x-if="$store.theme.current === 'dark'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </template>
+        <template x-if="$store.theme.current === 'light'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </template>
+        <template x-if="$store.theme.current === null">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20V2z" fill="currentColor"/>
+          </svg>
+        </template>
+      </button>
+      <!-- Settings gear -->
+      <button class="icon-btn" @click="openSettings()" title="Parametres">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <span class="connection-dot" :class="connected ? 'online' : 'offline'"
+            :title="connected ? 'Connecte' : 'Deconnecte'"></span>
+    </div>
   </header>
+
+  <!-- Offline banner -->
+  <div class="offline-banner" x-show="!connected" x-cloak>
+    Connexion perdue &mdash; reconnexion...
+  </div>
 
   <!-- Alerts -->
   <template x-if="error">
@@ -32,6 +75,7 @@
   <!-- Loading state -->
   <template x-if="!s">
     <div class="loading">
+      <div class="spinner"></div>
       <p>En attente de l'appareil...</p>
     </div>
   </template>
@@ -40,25 +84,65 @@
   <template x-if="s">
     <main class="controls">
 
-      <!-- Current humidity (big display) -->
-      <section class="humidity-display">
-        <div class="humidity-value" x-text="s.humidity_current + '%'"></div>
-        <div class="humidity-label">Humidite actuelle</div>
-      </section>
-
-      <!-- Power toggle -->
-      <section class="card">
-        <div class="card-row">
-          <span class="card-label">Alimentation</span>
-          <button class="toggle-btn" :class="s.switch ? 'active' : ''"
-                  @click="togglePower" :disabled="sending">
-            <span x-text="s.switch ? 'ON' : 'OFF'"></span>
+      <!-- Hero section: gauge + power + sparkline -->
+      <section class="hero-card" :class="isPending('power') ? 'is-pending' : ''">
+        <div class="hero-top">
+          <div class="humidity-ring">
+            <svg viewBox="0 0 220 220">
+              <defs>
+                <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#60a5fa"/>
+                  <stop offset="100%" stop-color="#3b82f6"/>
+                </linearGradient>
+                <filter id="gaugeGlow">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              <circle class="humidity-ring__track" cx="110" cy="110" r="95"></circle>
+              <circle class="humidity-ring__fill" cx="110" cy="110" r="95"
+                      filter="url(#gaugeGlow)"
+                      stroke="url(#gaugeGradient)"
+                      stroke-dasharray="597"
+                      :stroke-dashoffset="597 - (597 * (s.humidity_current || 0) / 100)"></circle>
+            </svg>
+            <div class="humidity-ring__center">
+              <span class="humidity-ring__value" x-text="s.humidity_current + '%'"></span>
+              <span class="humidity-ring__label">Humidite</span>
+            </div>
+          </div>
+          <button class="power-btn" :class="s.switch ? 'active' : ''"
+                  @click="togglePower" :disabled="isPending('power')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="2" x2="12" y2="12"/>
+              <path d="M16.24 7.76a6 6 0 1 1-8.49 0"/>
+            </svg>
           </button>
+        </div>
+
+        <!-- Last updated -->
+        <div class="last-updated" x-show="lastUpdatedText" x-text="lastUpdatedText"></div>
+
+        <!-- Sparkline -->
+        <div class="sparkline-container" x-show="humidityHistory.length > 1">
+          <svg class="sparkline" viewBox="0 0 300 40" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="var(--primary)" stop-opacity="0.05"/>
+              </linearGradient>
+            </defs>
+            <polygon :points="sparklineArea" fill="url(#sparkGradient)"/>
+            <polyline :points="sparklinePoints" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
         </div>
       </section>
 
-      <!-- Target humidity slider -->
-      <section class="card">
+      <!-- Controls: humidity slider + mode grid -->
+      <section class="card" :class="isPending('humidity') ? 'is-pending' : ''">
         <div class="card-header">
           <span class="card-label">Humidite cible</span>
           <span class="card-value" x-text="s.humidity_set + '%'"></span>
@@ -67,71 +151,170 @@
                :value="s.humidity_set"
                @input="snapHumidity($event)"
                @change="changeHumidity($event)"
-               :disabled="sending"
+               :disabled="isPending('humidity')"
                class="slider">
         <div class="slider-labels">
           <span>35%</span><span>70%</span>
         </div>
       </section>
 
-      <!-- Mode selector -->
-      <section class="card">
+      <section class="card" :class="isPending('mode') ? 'is-pending' : ''">
         <div class="card-header">
           <span class="card-label">Mode</span>
         </div>
         <div class="mode-grid">
-          <template x-for="m in ['manual', 'laundry', 'sleep', 'purify']" :key="m">
-            <button class="mode-btn" :class="s.mode === m ? 'active' : ''"
-                    @click="send(() => setMode(m))" :disabled="sending">
-              <span x-text="m === 'manual' ? 'Manuel' : m === 'laundry' ? 'Linge' : m === 'sleep' ? 'Nuit' : 'Purif.'"></span>
-            </button>
-          </template>
-        </div>
-      </section>
-
-      <!-- Timer -->
-      <section class="card">
-        <div class="card-row">
-          <span class="card-label">Minuterie arret</span>
-          <select @change="changeTimer($event)" :disabled="sending" class="select">
-            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="t">
-              <option :value="t" :selected="s.countdown_set === t"
-                      x-text="t === 'cancel' ? 'Off' : t"></option>
-            </template>
-          </select>
-        </div>
-        <template x-if="s.countdown_left > 0">
-          <div class="timer-remaining">
-            Restant : <span x-text="s.countdown_left + 'h'"></span>
-          </div>
-        </template>
-      </section>
-
-      <!-- On Timer -->
-      <section class="card">
-        <div class="card-row">
-          <span class="card-label">Minuterie allumage</span>
-          <select @change="changeOnTimer($event)" :disabled="sending" class="select">
-            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="t">
-              <option :value="t" :selected="s.on_timer === t"
-                      x-text="t === 'cancel' ? 'Off' : t"></option>
-            </template>
-          </select>
-        </div>
-      </section>
-
-      <!-- Child lock -->
-      <section class="card">
-        <div class="card-row">
-          <span class="card-label">Verrouillage enfant</span>
-          <button class="toggle-btn small" :class="s.child_lock ? 'active' : ''"
-                  @click="toggleChildLock" :disabled="sending">
-            <span x-text="s.child_lock ? 'ON' : 'OFF'"></span>
+          <button class="mode-btn" :class="s.mode === 'manual' ? 'active' : ''"
+                  @click="changeMode('manual')" :disabled="isPending('mode')">
+            <svg class="mode-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="10" cy="10" r="7"/>
+              <circle cx="10" cy="10" r="2.5"/>
+              <line x1="10" y1="1" x2="10" y2="3.5"/>
+              <line x1="10" y1="16.5" x2="10" y2="19"/>
+              <line x1="1" y1="10" x2="3.5" y2="10"/>
+              <line x1="16.5" y1="10" x2="19" y2="10"/>
+            </svg>
+            <span>Manuel</span>
+          </button>
+          <button class="mode-btn" :class="s.mode === 'laundry' ? 'active' : ''"
+                  @click="changeMode('laundry')" :disabled="isPending('mode')">
+            <svg class="mode-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 2h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z"/>
+              <line x1="3" y1="6" x2="17" y2="6"/>
+              <circle cx="10" cy="12" r="4"/>
+            </svg>
+            <span>Linge</span>
+          </button>
+          <button class="mode-btn" :class="s.mode === 'sleep' ? 'active' : ''"
+                  @click="changeMode('sleep')" :disabled="isPending('mode')">
+            <svg class="mode-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 12.5A7.5 7.5 0 0 1 7.5 3c0-.3 0-.6.04-.9A8 8 0 1 0 17.9 12.96c-.3.04-.6.04-.9.04z"/>
+            </svg>
+            <span>Nuit</span>
+          </button>
+          <button class="mode-btn" :class="s.mode === 'purify' ? 'active' : ''"
+                  @click="changeMode('purify')" :disabled="isPending('mode')">
+            <svg class="mode-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10 2v2"/>
+              <path d="M10 16v2"/>
+              <path d="M4.93 4.93l1.41 1.41"/>
+              <path d="M13.66 13.66l1.41 1.41"/>
+              <path d="M2 10h2"/>
+              <path d="M16 10h2"/>
+              <path d="M4.93 15.07l1.41-1.41"/>
+              <path d="M13.66 6.34l1.41-1.41"/>
+              <circle cx="10" cy="10" r="3"/>
+            </svg>
+            <span>Purif.</span>
           </button>
         </div>
       </section>
 
+      <!-- Timers grouped -->
+      <section class="card timers-card">
+        <div class="timer-group" :class="isPending('timer') ? 'is-pending' : ''">
+          <div class="card-header">
+            <span class="card-label">Minuterie arret</span>
+            <template x-if="s.countdown_left > 0">
+              <span class="card-value timer-badge" x-text="s.countdown_left + 'h'"></span>
+            </template>
+          </div>
+          <div class="pill-scroll">
+            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="'off-'+t">
+              <button class="pill" :class="s.countdown_set === t ? 'active' : ''"
+                      @click="changeTimer(t)" :disabled="isPending('timer')"
+                      x-text="t === 'cancel' ? 'Off' : t"></button>
+            </template>
+          </div>
+        </div>
+        <div class="timer-divider"></div>
+        <div class="timer-group" :class="isPending('on_timer') ? 'is-pending' : ''">
+          <div class="card-header">
+            <span class="card-label">Minuterie allumage</span>
+          </div>
+          <div class="pill-scroll">
+            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="'on-'+t">
+              <button class="pill" :class="s.on_timer === t ? 'active' : ''"
+                      @click="changeOnTimer(t)" :disabled="isPending('on_timer')"
+                      x-text="t === 'cancel' ? 'Off' : t"></button>
+            </template>
+          </div>
+        </div>
+      </section>
+
+      <!-- Child lock (footer) -->
+      <section class="card card-footer" :class="isPending('child_lock') ? 'is-pending' : ''">
+        <div class="card-row">
+          <span class="card-label">Verrouillage enfant</span>
+          <button class="toggle-switch" :class="s.child_lock ? 'active' : ''"
+                  @click="toggleChildLock" :disabled="isPending('child_lock')"></button>
+        </div>
+      </section>
+
     </main>
+  </template>
+
+  <!-- Settings modal -->
+  <template x-if="settingsOpen">
+    <div class="modal-overlay" @click.self="closeSettings()">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <span class="modal-title">Parametres</span>
+          <button class="modal-close" @click="closeSettings()">&times;</button>
+        </div>
+
+        <!-- Connection status in modal -->
+        <div class="modal-connection">
+          <span class="connection-dot" :class="connected ? 'online' : 'offline'"></span>
+          <span x-text="connected ? 'Connecte' : 'Deconnecte'"></span>
+        </div>
+
+        <template x-if="settingsLoading && !settingsForm">
+          <div class="loading" style="min-height:auto;padding:32px 0">
+            <div class="spinner"></div>
+          </div>
+        </template>
+
+        <template x-if="settingsForm">
+          <form @submit.prevent="saveSettings()">
+            <div class="form-group">
+              <label class="form-label">Device ID</label>
+              <input class="form-input" type="text" x-model="settingsForm.device_id">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Device IP</label>
+              <input class="form-input" type="text" x-model="settingsForm.device_ip"
+                     placeholder="192.168.1.x">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Local Key</label>
+              <input class="form-input" type="password" x-model="settingsForm.local_key"
+                     placeholder="Laisser vide pour garder la cle actuelle">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Intervalle de sondage (secondes)</label>
+              <input class="form-input" type="number" min="1" max="300"
+                     x-model.number="settingsForm.poll_interval">
+            </div>
+            <div class="form-row">
+              <span class="form-row-label">Mode simulation</span>
+              <button type="button" class="toggle-switch"
+                      :class="settingsForm.mock_device ? 'active' : ''"
+                      @click="settingsForm.mock_device = !settingsForm.mock_device"></button>
+            </div>
+            <button type="submit" class="save-btn" :disabled="settingsLoading">
+              <span x-text="settingsLoading ? 'Enregistrement...' : 'Enregistrer'"></span>
+            </button>
+          </form>
+        </template>
+
+        <template x-if="settingsSuccess">
+          <div class="modal-feedback success">Parametres enregistres</div>
+        </template>
+        <template x-if="settingsError">
+          <div class="modal-feedback error" x-text="settingsError"></div>
+        </template>
+      </div>
+    </div>
   </template>
 
   <script>
@@ -139,10 +322,11 @@
       navigator.serviceWorker.register('/purify/sw.js')
     }
   </script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="/purify/js/alpine.min.js"></script>
   <script src="/purify/js/store.js"></script>
   <script src="/purify/js/api.js"></script>
   <script src="/purify/js/ws.js"></script>
+  <script src="/purify/js/settings.js"></script>
   <script src="/purify/js/app.js"></script>
 </body>
 </html>

@@ -1,11 +1,13 @@
-const CACHE_NAME = 'purify-v1'
+const CACHE_NAME = 'purify-v2'
 const STATIC_ASSETS = [
   '/purify/',
   '/purify/index.html',
   '/purify/css/style.css',
+  '/purify/js/alpine.min.js',
   '/purify/js/store.js',
   '/purify/js/api.js',
   '/purify/js/ws.js',
+  '/purify/js/settings.js',
   '/purify/js/app.js',
   '/purify/manifest.json',
   '/purify/icons/icon-192.png',

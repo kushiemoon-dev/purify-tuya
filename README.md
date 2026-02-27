@@ -2,9 +2,9 @@
 
 # Purify
 
-### Local control for your Meaco dehumidifier — no cloud required
+### Local control for your Tuya device — no cloud required
 
-[![License](https://img.shields.io/github/license/kushiemoon-dev/purify-tuya?style=flat-square&color=gray)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-gray?style=flat-square)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 ![Linux](https://img.shields.io/badge/Linux-any-FCC624?style=flat-square&logo=linux&logoColor=black)
 
@@ -14,7 +14,7 @@
 
 ## Overview
 
-**Purify** is a PWA for controlling a Meaco MeacoDry Arete Two 10L dehumidifier/air purifier over your local network via the Tuya protocol. No cloud account, no internet dependency — just direct LAN communication with your device.
+**Purify** is a PWA for controlling a Tuya-based dehumidifier/air purifier over your local network. No cloud account, no internet dependency — just direct LAN communication with your device via the Tuya protocol.
 
 ---
 
@@ -87,8 +87,8 @@ Browser (PWA)
       tinytuya (LAN)
             │
             ▼
-    Meaco Dehumidifier
-    (Tuya protocol v3.3)
+      Tuya Device
+    (protocol v3.3)
 ```
 
 ---
@@ -140,7 +140,7 @@ Requires `mod_proxy`, `mod_proxy_http`, and `mod_proxy_wstunnel`.
 
 ## Disclaimer
 
-Purify is not affiliated with, endorsed by, or connected to Meaco, Tuya, or any device manufacturer. Use at your own risk.
+Purify is not affiliated with, endorsed by, or connected to Tuya or any device manufacturer. Use at your own risk.
 
 ---
 

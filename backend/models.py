@@ -118,3 +118,11 @@ class SetOnTimerRequest(BaseModel):
     def model_post_init(self, __context) -> None:
         if self.hours not in TIMER_VALUES:
             raise ValueError(f"Timer must be one of: {TIMER_VALUES}")
+
+
+class UpdateSettingsRequest(BaseModel):
+    device_id: str = ""
+    device_ip: str = ""
+    local_key: str = ""
+    poll_interval: int = Field(default=5, ge=1, le=300)
+    mock_device: bool = True
