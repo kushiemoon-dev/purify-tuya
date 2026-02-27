@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" x-data :lang="$store.i18n.locale">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -28,8 +28,10 @@
     <div class="status-bar__right">
       <template x-if="s">
         <span class="status-text" :class="s.switch ? 'status-on' : 'status-off'"
-              x-text="s.switch ? 'En marche' : 'Eteint'"></span>
+              x-text="s.switch ? $store.i18n.t('status.on') : $store.i18n.t('status.off')"></span>
       </template>
+      <!-- Language toggle -->
+      <button class="icon-btn" @click="$store.i18n.toggle()" x-text="$store.i18n.locale.toUpperCase()"></button>
       <!-- Theme toggle -->
       <button class="icon-btn" @click="$store.theme.cycle()" title="Theme">
         <template x-if="$store.theme.current === 'dark'">
@@ -55,13 +57,12 @@
         </svg>
       </button>
       <span class="connection-dot" :class="connected ? 'online' : 'offline'"
-            :title="connected ? 'Connecte' : 'Deconnecte'"></span>
+            :title="connected ? $store.i18n.t('status.connected') : $store.i18n.t('status.disconnected')"></span>
     </div>
   </header>
 
   <!-- Offline banner -->
-  <div class="offline-banner" x-show="!connected" x-cloak>
-    Connexion perdue &mdash; reconnexion...
+  <div class="offline-banner" x-show="!connected" x-cloak x-text="$store.i18n.t('offline.banner')">
   </div>
 
   <!-- Alerts -->
@@ -76,7 +77,7 @@
   <template x-if="!s">
     <div class="loading">
       <div class="spinner"></div>
-      <p>En attente de l'appareil...</p>
+      <p x-text="$store.i18n.t('loading')"></p>
     </div>
   </template>
 
@@ -111,7 +112,7 @@
             </svg>
             <div class="humidity-ring__center">
               <span class="humidity-ring__value" x-text="s.humidity_current + '%'"></span>
-              <span class="humidity-ring__label">Humidite</span>
+              <span class="humidity-ring__label" x-text="$store.i18n.t('gauge.label')"></span>
             </div>
           </div>
           <button class="power-btn" :class="s.switch ? 'active' : ''"
@@ -144,7 +145,7 @@
       <!-- Controls: humidity slider + mode grid -->
       <section class="card" :class="isPending('humidity') ? 'is-pending' : ''">
         <div class="card-header">
-          <span class="card-label">Humidite cible</span>
+          <span class="card-label" x-text="$store.i18n.t('humidity.target')"></span>
           <span class="card-value" x-text="s.humidity_set + '%'"></span>
         </div>
         <input type="range" min="35" max="70" step="5"
@@ -160,7 +161,7 @@
 
       <section class="card" :class="isPending('mode') ? 'is-pending' : ''">
         <div class="card-header">
-          <span class="card-label">Mode</span>
+          <span class="card-label" x-text="$store.i18n.t('mode.label')"></span>
         </div>
         <div class="mode-grid">
           <button class="mode-btn" :class="s.mode === 'manual' ? 'active' : ''"
@@ -173,7 +174,7 @@
               <line x1="1" y1="10" x2="3.5" y2="10"/>
               <line x1="16.5" y1="10" x2="19" y2="10"/>
             </svg>
-            <span>Manuel</span>
+            <span x-text="$store.i18n.t('mode.manual')"></span>
           </button>
           <button class="mode-btn" :class="s.mode === 'laundry' ? 'active' : ''"
                   @click="changeMode('laundry')" :disabled="isPending('mode')">
@@ -182,14 +183,14 @@
               <line x1="3" y1="6" x2="17" y2="6"/>
               <circle cx="10" cy="12" r="4"/>
             </svg>
-            <span>Linge</span>
+            <span x-text="$store.i18n.t('mode.laundry')"></span>
           </button>
           <button class="mode-btn" :class="s.mode === 'sleep' ? 'active' : ''"
                   @click="changeMode('sleep')" :disabled="isPending('mode')">
             <svg class="mode-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M17 12.5A7.5 7.5 0 0 1 7.5 3c0-.3 0-.6.04-.9A8 8 0 1 0 17.9 12.96c-.3.04-.6.04-.9.04z"/>
             </svg>
-            <span>Nuit</span>
+            <span x-text="$store.i18n.t('mode.sleep')"></span>
           </button>
           <button class="mode-btn" :class="s.mode === 'purify' ? 'active' : ''"
                   @click="changeMode('purify')" :disabled="isPending('mode')">
@@ -204,7 +205,7 @@
               <path d="M13.66 6.34l1.41-1.41"/>
               <circle cx="10" cy="10" r="3"/>
             </svg>
-            <span>Purif.</span>
+            <span x-text="$store.i18n.t('mode.purify')"></span>
           </button>
         </div>
       </section>
@@ -213,7 +214,7 @@
       <section class="card timers-card">
         <div class="timer-group" :class="isPending('timer') ? 'is-pending' : ''">
           <div class="card-header">
-            <span class="card-label">Minuterie arret</span>
+            <span class="card-label" x-text="$store.i18n.t('timer.off')"></span>
             <template x-if="s.countdown_left > 0">
               <span class="card-value timer-badge" x-text="s.countdown_left + 'h'"></span>
             </template>
@@ -229,7 +230,7 @@
         <div class="timer-divider"></div>
         <div class="timer-group" :class="isPending('on_timer') ? 'is-pending' : ''">
           <div class="card-header">
-            <span class="card-label">Minuterie allumage</span>
+            <span class="card-label" x-text="$store.i18n.t('timer.on')"></span>
           </div>
           <div class="pill-scroll">
             <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="'on-'+t">
@@ -244,7 +245,7 @@
       <!-- Child lock (footer) -->
       <section class="card card-footer" :class="isPending('child_lock') ? 'is-pending' : ''">
         <div class="card-row">
-          <span class="card-label">Verrouillage enfant</span>
+          <span class="card-label" x-text="$store.i18n.t('childLock')"></span>
           <button class="toggle-switch" :class="s.child_lock ? 'active' : ''"
                   @click="toggleChildLock" :disabled="isPending('child_lock')"></button>
         </div>
@@ -258,14 +259,14 @@
     <div class="modal-overlay" @click.self="closeSettings()">
       <div class="modal-sheet">
         <div class="modal-header">
-          <span class="modal-title">Parametres</span>
+          <span class="modal-title" x-text="$store.i18n.t('settings.title')"></span>
           <button class="modal-close" @click="closeSettings()">&times;</button>
         </div>
 
         <!-- Connection status in modal -->
         <div class="modal-connection">
           <span class="connection-dot" :class="connected ? 'online' : 'offline'"></span>
-          <span x-text="connected ? 'Connecte' : 'Deconnecte'"></span>
+          <span x-text="connected ? $store.i18n.t('status.connected') : $store.i18n.t('status.disconnected')"></span>
         </div>
 
         <template x-if="settingsLoading && !settingsForm">
@@ -288,27 +289,27 @@
             <div class="form-group">
               <label class="form-label">Local Key</label>
               <input class="form-input" type="password" x-model="settingsForm.local_key"
-                     placeholder="Laisser vide pour garder la cle actuelle">
+                     :placeholder="$store.i18n.t('settings.keyPlaceholder')">
             </div>
             <div class="form-group">
-              <label class="form-label">Intervalle de sondage (secondes)</label>
+              <label class="form-label" x-text="$store.i18n.t('settings.polling')"></label>
               <input class="form-input" type="number" min="1" max="300"
                      x-model.number="settingsForm.poll_interval">
             </div>
             <div class="form-row">
-              <span class="form-row-label">Mode simulation</span>
+              <span class="form-row-label" x-text="$store.i18n.t('settings.mock')"></span>
               <button type="button" class="toggle-switch"
                       :class="settingsForm.mock_device ? 'active' : ''"
                       @click="settingsForm.mock_device = !settingsForm.mock_device"></button>
             </div>
             <button type="submit" class="save-btn" :disabled="settingsLoading">
-              <span x-text="settingsLoading ? 'Enregistrement...' : 'Enregistrer'"></span>
+              <span x-text="settingsLoading ? $store.i18n.t('settings.saving') : $store.i18n.t('settings.save')"></span>
             </button>
           </form>
         </template>
 
         <template x-if="settingsSuccess">
-          <div class="modal-feedback success">Parametres enregistres</div>
+          <div class="modal-feedback success" x-text="$store.i18n.t('settings.saved')"></div>
         </template>
         <template x-if="settingsError">
           <div class="modal-feedback error" x-text="settingsError"></div>
@@ -323,6 +324,7 @@
     }
   </script>
   <script defer src="/purify/js/alpine.min.js"></script>
+  <script src="/purify/js/i18n.js"></script>
   <script src="/purify/js/store.js"></script>
   <script src="/purify/js/api.js"></script>
   <script src="/purify/js/ws.js"></script>

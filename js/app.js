@@ -33,11 +33,12 @@ document.addEventListener('alpine:init', () => {
     get lastUpdatedText() {
       const lu = Alpine.store('device').lastUpdated
       if (!lu) return ''
+      const t = Alpine.store('i18n').t.bind(Alpine.store('i18n'))
       const diff = Math.floor((this._now - lu) / 1000)
-      if (diff < 10) return 'Maintenant'
-      if (diff < 60) return 'Il y a ' + diff + 's'
+      if (diff < 10) return t('time.now')
+      if (diff < 60) return t('time.seconds', { n: diff })
       const mins = Math.floor(diff / 60)
-      return 'Il y a ' + mins + 'min'
+      return t('time.minutes', { n: mins })
     },
 
     _sparklineCoords() {
@@ -68,9 +69,10 @@ document.addEventListener('alpine:init', () => {
 
     get faultAlerts() {
       if (!this.s) return []
+      const t = Alpine.store('i18n').t.bind(Alpine.store('i18n'))
       const alerts = []
-      if (this.s.tank_full) alerts.push({ type: 'error', message: 'Reservoir plein' })
-      if (this.s.defrosting) alerts.push({ type: 'warning', message: 'Degivrage en cours' })
+      if (this.s.tank_full) alerts.push({ type: 'error', message: t('alert.tankFull') })
+      if (this.s.defrosting) alerts.push({ type: 'warning', message: t('alert.defrosting') })
       return alerts
     },
 
