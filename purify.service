@@ -1,0 +1,15 @@
+[Unit]
+Description=Purify - Meaco Dehumidifier Control
+After=network.target
+
+[Service]
+Type=simple
+User=kushie
+WorkingDirectory=/srv/http/purify/backend
+EnvironmentFile=/srv/http/purify/backend/.env
+ExecStart=/srv/http/purify/backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Purify</title>
+  <link rel="manifest" href="/purify/manifest.json">
+  <link rel="icon" href="/purify/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/purify/icons/icon-192.png">
+  <link rel="stylesheet" href="/purify/css/style.css">
+</head>
+<body x-data="purifyApp">
+
+  <!-- Connection status -->
+  <header class="status-bar">
+    <span class="app-title">Purify</span>
+    <span class="connection-dot" :class="connected ? 'online' : 'offline'"
+          :title="connected ? 'Connecte' : 'Deconnecte'"></span>
+  </header>
+
+  <!-- Alerts -->
+  <template x-if="error">
+    <div class="alert alert-error" x-text="error"></div>
+  </template>
+  <template x-for="alert in faultAlerts" :key="alert.message">
+    <div class="alert" :class="'alert-' + alert.type" x-text="alert.message"></div>
+  </template>
+
+  <!-- Loading state -->
+  <template x-if="!s">
+    <div class="loading">
+      <p>En attente de l'appareil...</p>
+    </div>
+  </template>
+
+  <!-- Main controls -->
+  <template x-if="s">
+    <main class="controls">
+
+      <!-- Current humidity (big display) -->
+      <section class="humidity-display">
+        <div class="humidity-value" x-text="s.humidity_current + '%'"></div>
+        <div class="humidity-label">Humidite actuelle</div>
+      </section>
+
+      <!-- Power toggle -->
+      <section class="card">
+        <div class="card-row">
+          <span class="card-label">Alimentation</span>
+          <button class="toggle-btn" :class="s.switch ? 'active' : ''"
+                  @click="togglePower" :disabled="sending">
+            <span x-text="s.switch ? 'ON' : 'OFF'"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Target humidity slider -->
+      <section class="card">
+        <div class="card-header">
+          <span class="card-label">Humidite cible</span>
+          <span class="card-value" x-text="s.humidity_set + '%'"></span>
+        </div>
+        <input type="range" min="35" max="70" step="5"
+               :value="s.humidity_set"
+               @input="snapHumidity($event)"
+               @change="changeHumidity($event)"
+               :disabled="sending"
+               class="slider">
+        <div class="slider-labels">
+          <span>35%</span><span>70%</span>
+        </div>
+      </section>
+
+      <!-- Mode selector -->
+      <section class="card">
+        <div class="card-header">
+          <span class="card-label">Mode</span>
+        </div>
+        <div class="mode-grid">
+          <template x-for="m in ['manual', 'laundry', 'sleep', 'purify']" :key="m">
+            <button class="mode-btn" :class="s.mode === m ? 'active' : ''"
+                    @click="send(() => setMode(m))" :disabled="sending">
+              <span x-text="m === 'manual' ? 'Manuel' : m === 'laundry' ? 'Linge' : m === 'sleep' ? 'Nuit' : 'Purif.'"></span>
+            </button>
+          </template>
+        </div>
+      </section>
+
+      <!-- Timer -->
+      <section class="card">
+        <div class="card-row">
+          <span class="card-label">Minuterie arret</span>
+          <select @change="changeTimer($event)" :disabled="sending" class="select">
+            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="t">
+              <option :value="t" :selected="s.countdown_set === t"
+                      x-text="t === 'cancel' ? 'Off' : t"></option>
+            </template>
+          </select>
+        </div>
+        <template x-if="s.countdown_left > 0">
+          <div class="timer-remaining">
+            Restant : <span x-text="s.countdown_left + 'h'"></span>
+          </div>
+        </template>
+      </section>
+
+      <!-- On Timer -->
+      <section class="card">
+        <div class="card-row">
+          <span class="card-label">Minuterie allumage</span>
+          <select @change="changeOnTimer($event)" :disabled="sending" class="select">
+            <template x-for="t in ['cancel','1h','2h','3h','4h','5h','6h','7h','8h','9h','10h','11h','12h','13h','14h','15h','16h','17h','18h','19h','20h','21h','22h','23h','24h']" :key="t">
+              <option :value="t" :selected="s.on_timer === t"
+                      x-text="t === 'cancel' ? 'Off' : t"></option>
+            </template>
+          </select>
+        </div>
+      </section>
+
+      <!-- Child lock -->
+      <section class="card">
+        <div class="card-row">
+          <span class="card-label">Verrouillage enfant</span>
+          <button class="toggle-btn small" :class="s.child_lock ? 'active' : ''"
+                  @click="toggleChildLock" :disabled="sending">
+            <span x-text="s.child_lock ? 'ON' : 'OFF'"></span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </template>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/purify/sw.js')
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="/purify/js/store.js"></script>
+  <script src="/purify/js/api.js"></script>
+  <script src="/purify/js/ws.js"></script>
+  <script src="/purify/js/app.js"></script>
+</body>
+</html>
