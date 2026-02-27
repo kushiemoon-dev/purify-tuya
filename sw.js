@@ -1,9 +1,10 @@
-const CACHE_NAME = 'purify-v2'
+const CACHE_NAME = 'purify-v3'
 const STATIC_ASSETS = [
   '/purify/',
   '/purify/index.html',
   '/purify/css/style.css',
   '/purify/js/alpine.min.js',
+  '/purify/js/i18n.js',
   '/purify/js/store.js',
   '/purify/js/api.js',
   '/purify/js/ws.js',

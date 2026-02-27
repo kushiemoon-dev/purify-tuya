@@ -8,6 +8,8 @@
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 ![Linux](https://img.shields.io/badge/Linux-any-FCC624?style=flat-square&logo=linux&logoColor=black)
 
+<img src="screenshot.png" alt="Purify screenshot" width="620">
+
 </div>
 
 ---
