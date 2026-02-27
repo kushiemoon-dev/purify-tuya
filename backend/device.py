@@ -12,7 +12,7 @@ class Device(ABC):
     def connect(self) -> None: ...
 
     @abstractmethod
-    def poll(self) -> DeviceState | None: ...
+    def poll(self) -> tuple[DeviceState, dict] | None: ...
 
     @abstractmethod
     def set_power(self, on: bool) -> None: ...
@@ -50,7 +50,7 @@ class MockDevice(Device):
     def connect(self) -> None:
         pass
 
-    def poll(self) -> DeviceState:
+    def poll(self) -> tuple[DeviceState, dict]:
         current = self._state.humidity_current
         drift = random.choice([-1, 0, 1])
 
@@ -62,23 +62,30 @@ class MockDevice(Device):
         self._state = DeviceState(
             **{**self._state.model_dump(), "humidity_current": new_humidity}
         )
-        return self._state
+        raw_dps = {
+            "1": self._state.switch,
+            "2": self._state.humidity_set,
+            "4": self._state.mode,
+            "14": self._state.child_lock,
+            "16": self._state.humidity_current,
+            "17": self._state.countdown_set,
+            "18": self._state.countdown_left,
+            "19": self._state.fault,
+            "101": self._state.on_timer,
+        }
+        return self._state, raw_dps
 
     def set_power(self, on: bool) -> None:
         self._state = DeviceState(**{**self._state.model_dump(), "switch": on})
 
     def set_humidity(self, value: int) -> None:
-        self._state = DeviceState(
-            **{**self._state.model_dump(), "humidity_set": value}
-        )
+        self._state = DeviceState(**{**self._state.model_dump(), "humidity_set": value})
 
     def set_mode(self, mode: str) -> None:
         self._state = DeviceState(**{**self._state.model_dump(), "mode": mode})
 
     def set_child_lock(self, on: bool) -> None:
-        self._state = DeviceState(
-            **{**self._state.model_dump(), "child_lock": on}
-        )
+        self._state = DeviceState(**{**self._state.model_dump(), "child_lock": on})
 
     def set_countdown(self, hours: str) -> None:
         self._state = DeviceState(
@@ -86,9 +93,7 @@ class MockDevice(Device):
         )
 
     def set_on_timer(self, hours: str) -> None:
-        self._state = DeviceState(
-            **{**self._state.model_dump(), "on_timer": hours}
-        )
+        self._state = DeviceState(**{**self._state.model_dump(), "on_timer": hours})
 
     def set_fault(self, fault: int) -> None:
         self._state = DeviceState(**{**self._state.model_dump(), "fault": fault})
@@ -110,13 +115,14 @@ class TuyaDevice(Device):
         )
         self._device.set_socketPersistent(True)
 
-    def poll(self) -> DeviceState | None:
+    def poll(self) -> tuple[DeviceState, dict] | None:
         if self._device is None:
             return None
         data = self._device.status()
         if "dps" not in data:
             return None
-        return DeviceState.from_dps(data["dps"])
+        raw_dps = data["dps"]
+        return DeviceState.from_dps(raw_dps), raw_dps
 
     def _set_dps(self, dps_id: str, value) -> None:
         if self._device is None:
