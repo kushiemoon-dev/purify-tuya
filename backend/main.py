@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 
-from config import settings
+from config import settings_holder
 from device import create_device
 from routes import init_routes
 from websocket import ConnectionManager
@@ -18,19 +18,26 @@ logger = logging.getLogger("purify")
 KNOWN_DPS = {"1", "2", "4", "14", "16", "17", "18", "19", "101"}
 MAX_HISTORY = 60
 
-device = create_device(settings)
+
+class DeviceHolder:
+    def __init__(self, device):
+        self.device = device
+
+
+holder = DeviceHolder(create_device(settings_holder.settings))
 manager = ConnectionManager()
 current_state: dict | None = None
 raw_dps: dict = {}
 humidity_history: deque[dict] = deque(maxlen=MAX_HISTORY)
 poll_now = asyncio.Event()
+device_replaced = asyncio.Event()
 
 
 async def poll_loop():
     global current_state, raw_dps
     while True:
         try:
-            result = await asyncio.to_thread(device.poll)
+            result = await asyncio.to_thread(holder.device.poll)
             if result is not None:
                 state, raw = result
                 raw_dps = raw
@@ -55,15 +62,26 @@ async def poll_loop():
         except Exception as e:
             logger.exception("poll_loop error: %s", e)
         poll_now.clear()
+        device_replaced.clear()
+        wait_tasks = [
+            asyncio.ensure_future(poll_now.wait()),
+            asyncio.ensure_future(device_replaced.wait()),
+        ]
         try:
-            await asyncio.wait_for(poll_now.wait(), timeout=settings.poll_interval)
+            await asyncio.wait_for(
+                asyncio.wait(wait_tasks, return_when=asyncio.FIRST_COMPLETED),
+                timeout=settings_holder.settings.poll_interval,
+            )
         except asyncio.TimeoutError:
             pass
+        finally:
+            for t in wait_tasks:
+                t.cancel()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    device.connect()
+    holder.device.connect()
     task = asyncio.create_task(poll_loop())
     yield
     task.cancel()
@@ -84,7 +102,15 @@ def get_humidity_history():
     return list(humidity_history)
 
 
-router = init_routes(device, get_state, get_raw_dps, get_humidity_history, poll_now)
+router = init_routes(
+    holder,
+    get_state,
+    get_raw_dps,
+    get_humidity_history,
+    poll_now,
+    settings_holder,
+    device_replaced,
+)
 app.include_router(router)
 
 

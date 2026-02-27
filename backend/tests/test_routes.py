@@ -21,10 +21,12 @@ class TestGetState:
         from fastapi.testclient import TestClient
 
         from routes import init_routes
+        from tests.conftest import DeviceHolder
 
         poll_now = asyncio.Event()
+        holder = DeviceHolder(mock_device)
         router = init_routes(
-            mock_device,
+            holder,
             get_state=lambda: None,
             get_raw_dps=lambda: {},
             get_humidity_history=lambda: [],
