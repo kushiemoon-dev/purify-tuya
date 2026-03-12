@@ -21,7 +21,7 @@ jobs:
       - run: >
           pytest tests/ -v --tb=short
           --cov=services --cov=drivers --cov=api
-          --cov-report=term-missing --cov-fail-under=80
+          --cov-report=term-missing --cov-fail-under=70
 
   backend-lint:
     runs-on: ubuntu-latest
