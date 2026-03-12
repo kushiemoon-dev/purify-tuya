@@ -1,4 +1,5 @@
 """Tests for services.device_manager — non-polling unit tests."""
+
 import pytest
 
 from drivers.base import DeviceCapabilities, DeviceSnapshot
@@ -12,7 +13,9 @@ import drivers.air_purifier  # noqa: F401
 class TestAddDevice:
     async def test_adds_device_and_starts_task(self):
         manager = DeviceManager()
-        managed = manager.add_device(db_id=1, name="Test", device_type="dehumidifier", is_mock=True)
+        managed = manager.add_device(
+            db_id=1, name="Test", device_type="dehumidifier", is_mock=True
+        )
         assert managed.db_id == 1
         assert managed.name == "Test"
         assert 1 in manager.devices
@@ -21,16 +24,22 @@ class TestAddDevice:
 
     async def test_duplicate_raises(self):
         manager = DeviceManager()
-        managed = manager.add_device(db_id=1, name="Test", device_type="dehumidifier", is_mock=True)
+        managed = manager.add_device(
+            db_id=1, name="Test", device_type="dehumidifier", is_mock=True
+        )
         with pytest.raises(ValueError, match="already managed"):
-            manager.add_device(db_id=1, name="Test2", device_type="dehumidifier", is_mock=True)
+            manager.add_device(
+                db_id=1, name="Test2", device_type="dehumidifier", is_mock=True
+            )
         managed.task.cancel()
 
 
 class TestRemoveDevice:
     async def test_removes_device(self):
         manager = DeviceManager()
-        manager.add_device(db_id=1, name="Test", device_type="dehumidifier", is_mock=True)
+        manager.add_device(
+            db_id=1, name="Test", device_type="dehumidifier", is_mock=True
+        )
         await manager.remove_device(1)
         assert 1 not in manager.devices
 
@@ -46,7 +55,9 @@ class TestGetState:
 
     async def test_returns_none_when_no_snapshot(self):
         manager = DeviceManager()
-        managed = manager.add_device(db_id=1, name="Test", device_type="dehumidifier", is_mock=True)
+        managed = manager.add_device(
+            db_id=1, name="Test", device_type="dehumidifier", is_mock=True
+        )
         # Snapshot is None initially (no poll yet)
         assert manager.get_state(1) is None
         managed.task.cancel()
@@ -76,12 +87,21 @@ class TestSnapshotToDict:
             faults={"tank_full": False, "defrosting": False},
             mode="manual",
             raw_dps={},
-            extra={"humidity_set": 50, "countdown_set": "cancel", "countdown_left": 0, "fault": 0, "on_timer": "cancel"},
+            extra={
+                "humidity_set": 50,
+                "countdown_set": "cancel",
+                "countdown_left": 0,
+                "fault": 0,
+                "on_timer": "cancel",
+            },
         )
         caps = DeviceCapabilities(
             metrics=("humidity_current",),
             modes=("manual", "laundry", "sleep", "purify"),
-            has_timer=True, has_on_timer=True, has_child_lock=True, has_fault=True,
+            has_timer=True,
+            has_on_timer=True,
+            has_child_lock=True,
+            has_fault=True,
             humidity_range=(35, 70),
         )
 
@@ -111,7 +131,8 @@ class TestSnapshotToDict:
         caps = DeviceCapabilities(
             metrics=("pm25",),
             modes=("auto", "sleep", "manual"),
-            has_child_lock=True, has_fault=True,
+            has_child_lock=True,
+            has_fault=True,
             extra={"has_fan_speed": True},
         )
 

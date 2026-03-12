@@ -15,6 +15,7 @@ MAX_HISTORY = 60
 @dataclass
 class ManagedDevice:
     """Runtime state for a single managed device."""
+
     db_id: int
     name: str
     driver: DeviceDriver
@@ -65,7 +66,9 @@ class DeviceManager:
         )
         self._devices = {**self._devices, db_id: managed}
         managed.task = asyncio.create_task(self._poll_loop(db_id))
-        logger.info("Started polling device %d (%s) every %ds", db_id, name, poll_interval)
+        logger.info(
+            "Started polling device %d (%s) every %ds", db_id, name, poll_interval
+        )
         return managed
 
     async def remove_device(self, db_id: int) -> None:
@@ -131,18 +134,23 @@ class DeviceManager:
 
                     humidity = snapshot.metrics.get("humidity_current")
                     if humidity is not None:
-                        managed.humidity_history.append({
-                            "t": int(time.time()),
-                            "v": humidity,
-                        })
+                        managed.humidity_history.append(
+                            {
+                                "t": int(time.time()),
+                                "v": humidity,
+                            }
+                        )
 
                     # Write readings to DB for historical data
                     if snapshot.metrics:
                         try:
                             from services.history_service import write_readings
+
                             await write_readings(db_id, snapshot.metrics)
                         except Exception as e:
-                            logger.warning("Failed to write readings for device %d: %s", db_id, e)
+                            logger.warning(
+                                "Failed to write readings for device %d: %s", db_id, e
+                            )
 
                     if self._on_update:
                         await self._on_update(
@@ -163,6 +171,7 @@ class DeviceManager:
             try:
                 await asyncio.sleep(86400)  # 24 hours
                 from services.history_service import cleanup_old_readings
+
                 await cleanup_old_readings()
             except asyncio.CancelledError:
                 raise
@@ -200,7 +209,9 @@ class DeviceManager:
                 "has_on_timer": caps.has_on_timer,
                 "has_child_lock": caps.has_child_lock,
                 "has_fault": caps.has_fault,
-                "humidity_range": list(caps.humidity_range) if caps.humidity_range else None,
+                "humidity_range": list(caps.humidity_range)
+                if caps.humidity_range
+                else None,
                 "extra": caps.extra,
             },
             "humidity_history": list(managed.humidity_history),

@@ -58,7 +58,9 @@ COMMAND_MAP = {
 
 @register_driver("air_purifier")
 class AirPurifierDriver(DeviceDriver):
-    def __init__(self, device_id: str = "", device_ip: str = "", local_key: str = "", **_):
+    def __init__(
+        self, device_id: str = "", device_ip: str = "", local_key: str = "", **_
+    ):
         self._device_id = device_id
         self._device_ip = device_ip
         self._local_key = local_key
@@ -66,6 +68,7 @@ class AirPurifierDriver(DeviceDriver):
 
     def connect(self) -> None:
         import tinytuya
+
         self._device = tinytuya.OutletDevice(
             dev_id=self._device_id,
             address=self._device_ip,

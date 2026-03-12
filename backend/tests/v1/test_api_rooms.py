@@ -1,4 +1,5 @@
 """Integration tests for the v1 rooms API."""
+
 import pytest
 
 

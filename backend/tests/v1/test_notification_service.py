@@ -1,4 +1,5 @@
 """Tests for services.notification_service."""
+
 import pytest
 
 from services.notification_service import (
@@ -31,7 +32,9 @@ class TestCreateNotification:
         assert result["device_id"] == 42
 
     async def test_with_message(self):
-        result = await create_notification(type="warn", title="T", message="details here")
+        result = await create_notification(
+            type="warn", title="T", message="details here"
+        )
         assert result["message"] == "details here"
 
 

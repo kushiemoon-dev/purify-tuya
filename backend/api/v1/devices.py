@@ -39,7 +39,9 @@ async def get_device(device_id: int, session: AsyncSession = Depends(get_session
 
 
 @router.post("", response_model=DeviceResponse, status_code=201)
-async def create_device(body: DeviceCreate, session: AsyncSession = Depends(get_session)):
+async def create_device(
+    body: DeviceCreate, session: AsyncSession = Depends(get_session)
+):
     device = DeviceModel(
         name=body.name,
         device_type=body.device_type,
@@ -111,7 +113,9 @@ async def delete_device(device_id: int, session: AsyncSession = Depends(get_sess
     await manager.remove_device(device_id)
 
     await session.execute(delete(Reading).where(Reading.device_id == device_id))
-    await session.execute(delete(Notification).where(Notification.device_id == device_id))
+    await session.execute(
+        delete(Notification).where(Notification.device_id == device_id)
+    )
     await session.delete(device)
     await session.commit()
 

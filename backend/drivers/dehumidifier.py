@@ -65,7 +65,9 @@ COMMAND_MAP = {
 
 @register_driver("dehumidifier")
 class DehumidifierDriver(DeviceDriver):
-    def __init__(self, device_id: str = "", device_ip: str = "", local_key: str = "", **_):
+    def __init__(
+        self, device_id: str = "", device_ip: str = "", local_key: str = "", **_
+    ):
         self._device_id = device_id
         self._device_ip = device_ip
         self._local_key = local_key

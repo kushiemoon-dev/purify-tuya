@@ -1,10 +1,10 @@
 """Integration tests for the v1 devices API."""
-from unittest.mock import AsyncMock, MagicMock
+
+from unittest.mock import MagicMock
 
 import pytest
 
-from drivers.base import DeviceCapabilities, DeviceSnapshot
-from services.device_manager import ManagedDevice
+from drivers.base import DeviceCapabilities
 
 
 @pytest.fixture(autouse=True)
@@ -123,7 +123,9 @@ class TestDeviceCommand:
         assert resp.json()["ok"] is True
 
     async def test_command_unknown_device(self, api_client, mock_device_manager):
-        mock_device_manager.execute_command.side_effect = ValueError("Device 1 not found")
+        mock_device_manager.execute_command.side_effect = ValueError(
+            "Device 1 not found"
+        )
         resp = await api_client.post(
             "/purify/api/v1/devices/1/command",
             json={"command": "set_power", "args": {"on": True}},

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class DeviceCapabilities:
     """Describes what a device type can do — used by frontend to adapt UI."""
+
     metrics: tuple[str, ...] = ()
     modes: tuple[str, ...] = ()
     has_timer: bool = False
@@ -18,6 +19,7 @@ class DeviceCapabilities:
 @dataclass(frozen=True)
 class DeviceSnapshot:
     """Normalized device state returned by poll()."""
+
     metrics: dict[str, float] = field(default_factory=dict)
     flags: dict[str, bool] = field(default_factory=dict)
     faults: dict[str, bool] = field(default_factory=dict)

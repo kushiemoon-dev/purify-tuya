@@ -1,4 +1,5 @@
 """Integration tests for the v1 automations API."""
+
 import pytest
 
 
@@ -10,7 +11,12 @@ def _use_test_db(patch_db_session):
 AUTO_PAYLOAD = {
     "name": "High Humidity Alert",
     "trigger_type": "threshold",
-    "trigger_config": {"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 70},
+    "trigger_config": {
+        "device_id": 1,
+        "metric": "humidity_current",
+        "operator": ">",
+        "value": 70,
+    },
     "action_type": "device_command",
     "action_config": {"device_id": 1, "command": "set_power", "args": {"on": True}},
     "cooldown": 300,

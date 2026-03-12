@@ -1,4 +1,5 @@
 """Shared fixtures for v1 API and service tests."""
+
 import sys
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock

@@ -1,4 +1,5 @@
 """Tests for services.history_service."""
+
 import datetime
 
 import pytest
@@ -41,7 +42,9 @@ class TestWriteReading:
 class TestWriteReadings:
     async def test_writes_multiple_metrics(self, device_id, db_session):
         await write_readings(device_id, {"humidity_current": 55.0, "temperature": 22.5})
-        result = await db_session.execute(select(Reading).where(Reading.device_id == device_id))
+        result = await db_session.execute(
+            select(Reading).where(Reading.device_id == device_id)
+        )
         readings = result.scalars().all()
         assert len(readings) == 2
         metrics = {r.metric for r in readings}
@@ -70,7 +73,9 @@ class TestGetHistory:
 
     async def test_explicit_raw_resolution(self, device_id):
         await write_reading(device_id, "humidity_current", 42.0)
-        result = await get_history(device_id, "humidity_current", range_hours=24, resolution_minutes=0)
+        result = await get_history(
+            device_id, "humidity_current", range_hours=24, resolution_minutes=0
+        )
         assert len(result) == 1
         assert result[0]["v"] == 42.0
 

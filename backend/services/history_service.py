@@ -1,8 +1,7 @@
 import datetime
 import logging
 
-from sqlalchemy import delete, func, select, text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import delete, select, text
 
 from db.engine import async_session
 from db.models import Reading
@@ -33,12 +32,14 @@ async def write_readings(device_id: int, metrics: dict[str, float]) -> None:
     now = datetime.datetime.utcnow()
     async with async_session() as session:
         for metric, value in metrics.items():
-            session.add(Reading(
-                device_id=device_id,
-                timestamp=now,
-                metric=metric,
-                value=value,
-            ))
+            session.add(
+                Reading(
+                    device_id=device_id,
+                    timestamp=now,
+                    metric=metric,
+                    value=value,
+                )
+            )
         await session.commit()
 
 
@@ -132,5 +133,7 @@ async def cleanup_old_readings() -> int:
         await session.commit()
         count = result.rowcount
         if count > 0:
-            logger.info("Cleaned up %d old readings (before %s)", count, cutoff.isoformat())
+            logger.info(
+                "Cleaned up %d old readings (before %s)", count, cutoff.isoformat()
+            )
         return count
