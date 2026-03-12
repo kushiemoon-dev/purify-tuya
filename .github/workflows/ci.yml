@@ -7,17 +7,20 @@ on:
     branches: [master]
 
 jobs:
-  test:
+  backend-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install -r backend/requirements.txt pytest httpx
-      - run: pytest backend/tests/ -v --tb=short
+      - run: pip install -r backend/requirements.txt
+      - run: >
+          pytest backend/tests/ -v --tb=short
+          --cov=backend/services --cov=backend/drivers --cov=backend/api
+          --cov-report=term-missing --cov-fail-under=80
 
-  lint:
+  backend-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,3 +30,31 @@ jobs:
       - run: pip install ruff
       - run: ruff check backend/
       - run: ruff format --check backend/
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+        working-directory: frontend
+      - run: npx tsc -b --noEmit
+        working-directory: frontend
+      - run: npm run lint
+        working-directory: frontend
+      - run: npx vitest run
+        working-directory: frontend
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
