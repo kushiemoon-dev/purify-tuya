@@ -13,9 +13,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
 from db.models import Base  # noqa: E402
 
-# Capture original get_session reference BEFORE any monkeypatching
-from db.engine import get_session as _original_get_session  # noqa: E402
-
 
 @pytest.fixture()
 async def db_engine():
@@ -87,16 +84,20 @@ async def api_client(db_engine, patch_db_session, mock_device_manager):
     from api.v1.devices import set_manager
     from api.v1.router import v1_router
 
+    # Import get_session from the same module the routes use, so the
+    # dependency_overrides key matches the exact function object in Depends().
+    from db.engine import get_session
+
     app = FastAPI()
     app.include_router(v1_router)
     set_manager(mock_device_manager)
 
-    # Override the original get_session dependency with one using test DB
+    # Override FastAPI's get_session dependency with one using test DB
     async def _test_get_session():
         async with patch_db_session() as session:
             yield session
 
-    app.dependency_overrides[_original_get_session] = _test_get_session
+    app.dependency_overrides[get_session] = _test_get_session
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
