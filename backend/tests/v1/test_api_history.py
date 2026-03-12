@@ -1,4 +1,5 @@
 """Integration tests for the v1 history API."""
+
 import pytest
 
 from db.models import DeviceModel

@@ -19,7 +19,9 @@ async def list_automations(session: AsyncSession = Depends(get_session)):
 
 
 @router.get("/{automation_id}", response_model=AutomationResponse)
-async def get_automation(automation_id: int, session: AsyncSession = Depends(get_session)):
+async def get_automation(
+    automation_id: int, session: AsyncSession = Depends(get_session)
+):
     auto = await session.get(Automation, automation_id)
     if auto is None:
         raise HTTPException(404, "Automation not found")
@@ -27,7 +29,9 @@ async def get_automation(automation_id: int, session: AsyncSession = Depends(get
 
 
 @router.post("", response_model=AutomationResponse, status_code=201)
-async def create_automation(body: AutomationCreate, session: AsyncSession = Depends(get_session)):
+async def create_automation(
+    body: AutomationCreate, session: AsyncSession = Depends(get_session)
+):
     auto = Automation(
         name=body.name,
         trigger_type=body.trigger_type,
@@ -66,7 +70,9 @@ async def update_automation(
 
 
 @router.delete("/{automation_id}", status_code=204)
-async def delete_automation(automation_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_automation(
+    automation_id: int, session: AsyncSession = Depends(get_session)
+):
     auto = await session.get(Automation, automation_id)
     if auto is None:
         raise HTTPException(404, "Automation not found")

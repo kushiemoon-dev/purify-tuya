@@ -9,15 +9,18 @@ on:
 jobs:
   backend-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - run: pip install -r backend/requirements.txt
+      - run: pip install -r requirements.txt
       - run: >
-          pytest backend/tests/ -v --tb=short
-          --cov=backend/services --cov=backend/drivers --cov=backend/api
+          pytest tests/ -v --tb=short
+          --cov=services --cov=drivers --cov=api
           --cov-report=term-missing --cov-fail-under=80
 
   backend-lint:

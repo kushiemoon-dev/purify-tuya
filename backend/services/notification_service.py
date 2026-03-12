@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from sqlalchemy import func, select, update
@@ -35,7 +34,9 @@ async def get_notifications(
 ) -> list[dict]:
     """Get recent notifications."""
     async with async_session() as session:
-        query = select(Notification).order_by(Notification.created_at.desc()).limit(limit)
+        query = (
+            select(Notification).order_by(Notification.created_at.desc()).limit(limit)
+        )
         if unread_only:
             query = query.where(Notification.read == False)  # noqa: E712
         result = await session.execute(query)

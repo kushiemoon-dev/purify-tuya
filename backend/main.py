@@ -32,6 +32,7 @@ MAX_HISTORY = 60
 
 # ── Legacy single-device state (kept for v1 compat routes) ──
 
+
 class DeviceHolder:
     def __init__(self, device):
         self.device = device
@@ -116,11 +117,13 @@ async def on_device_update(device_id: int, snapshot, history):
     if managed is None:
         return
     state = device_manager._snapshot_to_dict(managed)
-    await ws_manager.broadcast({
-        "type": "device_update",
-        "device_id": device_id,
-        **state,
-    })
+    await ws_manager.broadcast(
+        {
+            "type": "device_update",
+            "device_id": device_id,
+            **state,
+        }
+    )
 
     # Check fault transitions for notifications
     fault = snapshot.extra.get("fault", 0)
@@ -132,11 +135,13 @@ async def on_device_update(device_id: int, snapshot, history):
     # Evaluate threshold automations
     if automation_engine and snapshot.metrics:
         try:
-            triggered = await automation_engine.evaluate_on_poll(device_id, snapshot.metrics)
+            triggered = await automation_engine.evaluate_on_poll(
+                device_id, snapshot.metrics
+            )
             for auto_id in triggered:
                 notif = await create_notification(
                     type="automation",
-                    title=f"Automation triggered",
+                    title="Automation triggered",
                     message=f"Automation #{auto_id} fired for {managed.name}",
                     device_id=device_id,
                 )
@@ -145,7 +150,9 @@ async def on_device_update(device_id: int, snapshot, history):
             logger.warning("Automation eval error for device %d: %s", device_id, e)
 
 
-async def _check_fault_notifications(device_id: int, name: str, fault: int, prev_fault: int):
+async def _check_fault_notifications(
+    device_id: int, name: str, fault: int, prev_fault: int
+):
     """Create notifications for new fault conditions."""
     # Bit 0 = tank full, Bit 1 = defrosting
     tank_now = bool(fault & 1)
@@ -208,6 +215,7 @@ async def load_devices_from_db():
 
 # ── Application lifecycle ──
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Init database
@@ -251,11 +259,14 @@ if os.environ.get("PURIFY_DEV"):
 
 # ── Legacy routes (single device) ──
 
+
 def get_state():
     return current_state
 
+
 def get_raw_dps():
     return raw_dps
+
 
 def get_humidity_history():
     return list(humidity_history)
@@ -278,6 +289,7 @@ app.include_router(v1_router)
 
 # ── WebSocket ──
 
+
 @app.websocket("/purify/ws")
 async def websocket_endpoint(ws: WebSocket):
     await ws_manager.connect(ws)
@@ -293,11 +305,13 @@ async def websocket_endpoint(ws: WebSocket):
         # Send all multi-device states
         if device_manager:
             for device_id, state in device_manager.get_all_states().items():
-                await ws.send_json({
-                    "type": "device_update",
-                    "device_id": device_id,
-                    **state,
-                })
+                await ws.send_json(
+                    {
+                        "type": "device_update",
+                        "device_id": device_id,
+                        **state,
+                    }
+                )
 
         while True:
             await ws.receive_text()
@@ -308,4 +322,6 @@ async def websocket_endpoint(ws: WebSocket):
 # Serve frontend static files under /purify/ (production only — in dev, Vite serves)
 if not os.environ.get("PURIFY_DEV"):
     frontend_dir = Path(__file__).resolve().parent.parent
-    app.mount("/purify", StaticFiles(directory=frontend_dir, html=True), name="frontend")
+    app.mount(
+        "/purify", StaticFiles(directory=frontend_dir, html=True), name="frontend"
+    )

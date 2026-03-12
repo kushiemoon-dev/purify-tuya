@@ -1,6 +1,6 @@
 """Tests for services.automation_engine."""
+
 import json
-import time
 
 import pytest
 
@@ -78,8 +78,17 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(execute)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 60},
-            action_config={"device_id": 1, "command": "set_power", "args": {"on": True}},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 60,
+            },
+            action_config={
+                "device_id": 1,
+                "command": "set_power",
+                "args": {"on": True},
+            },
         )
 
         triggered = await engine.evaluate_on_poll(1, {"humidity_current": 70.0})
@@ -90,7 +99,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(lambda *a: None)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 60},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 60,
+            },
         )
 
         triggered = await engine.evaluate_on_poll(99, {"humidity_current": 70.0})
@@ -100,7 +114,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(lambda *a: None)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 80},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 80,
+            },
         )
 
         triggered = await engine.evaluate_on_poll(1, {"humidity_current": 70.0})
@@ -110,7 +129,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(lambda *a: None)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 60},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 60,
+            },
             enabled=False,
         )
 
@@ -126,7 +150,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(execute)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 60},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 60,
+            },
             cooldown=9999,
         )
 
@@ -138,7 +167,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(lambda *a: None)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "temperature", "operator": ">", "value": 30},
+            trigger_config={
+                "device_id": 1,
+                "metric": "temperature",
+                "operator": ">",
+                "value": 30,
+            },
         )
 
         triggered = await engine.evaluate_on_poll(1, {"humidity_current": 70.0})
@@ -151,7 +185,12 @@ class TestEvaluateOnPoll:
         engine = AutomationEngine(execute)
 
         await create_automation(
-            trigger_config={"device_id": 1, "metric": "humidity_current", "operator": ">", "value": 60},
+            trigger_config={
+                "device_id": 1,
+                "metric": "humidity_current",
+                "operator": ">",
+                "value": 60,
+            },
         )
 
         triggered = await engine.evaluate_on_poll(1, {"humidity_current": 70.0})

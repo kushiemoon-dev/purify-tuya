@@ -1,4 +1,5 @@
 """Tests for drivers — mock drivers and registry."""
+
 import pytest
 
 from drivers.base import DeviceCapabilities, DeviceSnapshot

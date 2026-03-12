@@ -1,4 +1,5 @@
 """Integration tests for the v1 notifications API."""
+
 import pytest
 
 from services.notification_service import create_notification

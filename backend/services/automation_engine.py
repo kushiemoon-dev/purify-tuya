@@ -15,7 +15,9 @@ class AutomationEngine:
     """Evaluates threshold and schedule-based automation rules."""
 
     def __init__(self, execute_action):
-        self._execute_action = execute_action  # async (action_type, action_config) -> None
+        self._execute_action = (
+            execute_action  # async (action_type, action_config) -> None
+        )
         self._last_triggered: dict[int, float] = {}  # automation_id -> timestamp
         self._schedule_task: asyncio.Task | None = None
 
@@ -30,7 +32,9 @@ class AutomationEngine:
             except asyncio.CancelledError:
                 pass
 
-    async def evaluate_on_poll(self, device_id: int, metrics: dict[str, float]) -> list[int]:
+    async def evaluate_on_poll(
+        self, device_id: int, metrics: dict[str, float]
+    ) -> list[int]:
         """Evaluate threshold automations after a device poll. Returns triggered automation IDs."""
         triggered = []
         async with async_session() as session:
@@ -74,7 +78,12 @@ class AutomationEngine:
                 triggered.append(auto.id)
                 logger.info(
                     "Automation %d (%s) triggered: %s %s %s (value=%s)",
-                    auto.id, auto.name, metric, operator, threshold, current_value,
+                    auto.id,
+                    auto.name,
+                    metric,
+                    operator,
+                    threshold,
+                    current_value,
                 )
             except Exception as e:
                 logger.error("Automation %d action failed: %s", auto.id, e)
@@ -104,6 +113,7 @@ class AutomationEngine:
 
         now = time.time()
         import datetime
+
         current_time = datetime.datetime.now()
         current_hhmm = current_time.strftime("%H:%M")
         current_weekday = current_time.weekday()  # 0=Monday
@@ -130,7 +140,12 @@ class AutomationEngine:
             try:
                 await self._execute_action(auto.action_type, action_config)
                 self._last_triggered = {**self._last_triggered, auto.id: now}
-                logger.info("Schedule automation %d (%s) triggered at %s", auto.id, auto.name, current_hhmm)
+                logger.info(
+                    "Schedule automation %d (%s) triggered at %s",
+                    auto.id,
+                    auto.name,
+                    current_hhmm,
+                )
             except Exception as e:
                 logger.error("Schedule automation %d action failed: %s", auto.id, e)
 

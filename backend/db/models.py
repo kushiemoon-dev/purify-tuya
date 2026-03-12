@@ -1,6 +1,15 @@
 import datetime
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -24,7 +33,9 @@ class DeviceModel(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    device_type: Mapped[str] = mapped_column(String(50), nullable=False, default="dehumidifier")
+    device_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="dehumidifier"
+    )
     device_id: Mapped[str] = mapped_column(String(100), default="")
     device_ip: Mapped[str] = mapped_column(String(50), default="")
     local_key: Mapped[str] = mapped_column(String(100), default="")
@@ -80,7 +91,9 @@ class Notification(Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     message: Mapped[str] = mapped_column(Text, default="")
     read: Mapped[bool] = mapped_column(Boolean, default=False)
-    device_id: Mapped[int | None] = mapped_column(ForeignKey("devices.id"), nullable=True)
+    device_id: Mapped[int | None] = mapped_column(
+        ForeignKey("devices.id"), nullable=True
+    )
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )
