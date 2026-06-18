@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 import { useCommand } from '@/shared/hooks/useCommand'
-import { setHumidity, sendDeviceCommand } from '@/shared/lib/api'
+import { sendDeviceCommand } from '@/shared/lib/api'
 
-export function HumiditySlider({ deviceId }: { deviceId?: number }) {
+export function HumiditySlider({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
   const { send, isPending } = useCommand(deviceId)
@@ -13,10 +13,7 @@ export function HumiditySlider({ deviceId }: { deviceId?: number }) {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = parseInt(e.target.value, 10)
     const snapped = Math.round(raw / 5) * 5
-    const fn = deviceId !== undefined
-      ? () => sendDeviceCommand(deviceId, 'set_humidity', { value: snapped })
-      : () => setHumidity(snapped)
-    send('humidity', fn, { humidity_set: snapped })
+    send('humidity', () => sendDeviceCommand(deviceId, 'set_humidity', { value: snapped }), { humidity_set: snapped })
   }
 
   return (

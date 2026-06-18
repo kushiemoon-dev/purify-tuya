@@ -1,10 +1,13 @@
 import asyncio
+import contextlib
 import logging
 import time
 from collections import deque
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
+from typing import Any
 
-from drivers.base import DeviceDriver, DeviceSnapshot
+from drivers.base import DeviceCapabilities, DeviceDriver, DeviceSnapshot
 from drivers.registry import create_driver
 
 logger = logging.getLogger("purify.device_manager")
@@ -29,7 +32,10 @@ class ManagedDevice:
 class DeviceManager:
     """Manages N device connections with independent polling tasks."""
 
-    def __init__(self, on_update=None):
+    def __init__(
+        self,
+        on_update: Callable[[int, DeviceSnapshot, list], Awaitable[None]] | None = None,
+    ) -> None:
         self._devices: dict[int, ManagedDevice] = {}
         self._on_update = on_update  # async callback(device_id, snapshot, history)
         self._cleanup_task: asyncio.Task | None = None
@@ -48,7 +54,7 @@ class DeviceManager:
         device_type: str,
         is_mock: bool,
         poll_interval: int = 5,
-        **driver_kwargs,
+        **driver_kwargs: Any,
     ) -> ManagedDevice:
         """Add and start polling a device."""
         if db_id in self._devices:
@@ -78,10 +84,8 @@ class DeviceManager:
             return
         if managed.task:
             managed.task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await managed.task
-            except asyncio.CancelledError:
-                pass
         self._devices = {k: v for k, v in self._devices.items() if k != db_id}
         logger.info("Stopped device %d (%s)", db_id, managed.name)
 
@@ -114,10 +118,8 @@ class DeviceManager:
         """Stop all polling tasks and cleanup task."""
         if self._cleanup_task:
             self._cleanup_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._cleanup_task
-            except asyncio.CancelledError:
-                pass
         for db_id in list(self._devices.keys()):
             await self.remove_device(db_id)
 
@@ -240,7 +242,7 @@ class DeviceManager:
         return result
 
 
-def _detect_type(caps) -> str:
+def _detect_type(caps: DeviceCapabilities) -> str:
     if "pm25" in caps.metrics:
         return "air_purifier"
     if "humidity_current" in caps.metrics:

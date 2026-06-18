@@ -1,3 +1,6 @@
+from collections.abc import Sequence
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,13 +28,17 @@ def get_manager() -> DeviceManager:
 
 
 @router.get("", response_model=list[DeviceResponse])
-async def list_devices(session: AsyncSession = Depends(get_session)):
+async def list_devices(
+    session: AsyncSession = Depends(get_session),
+) -> Sequence[DeviceModel]:
     result = await session.execute(select(DeviceModel).order_by(DeviceModel.id))
     return result.scalars().all()
 
 
 @router.get("/{device_id}", response_model=DeviceResponse)
-async def get_device(device_id: int, session: AsyncSession = Depends(get_session)):
+async def get_device(
+    device_id: int, session: AsyncSession = Depends(get_session)
+) -> DeviceModel:
     device = await session.get(DeviceModel, device_id)
     if device is None:
         raise HTTPException(404, "Device not found")
@@ -41,7 +48,7 @@ async def get_device(device_id: int, session: AsyncSession = Depends(get_session
 @router.post("", response_model=DeviceResponse, status_code=201)
 async def create_device(
     body: DeviceCreate, session: AsyncSession = Depends(get_session)
-):
+) -> DeviceModel:
     device = DeviceModel(
         name=body.name,
         device_type=body.device_type,
@@ -75,7 +82,7 @@ async def update_device(
     device_id: int,
     body: DeviceUpdate,
     session: AsyncSession = Depends(get_session),
-):
+) -> DeviceModel:
     device = await session.get(DeviceModel, device_id)
     if device is None:
         raise HTTPException(404, "Device not found")
@@ -104,7 +111,9 @@ async def update_device(
 
 
 @router.delete("/{device_id}", status_code=204)
-async def delete_device(device_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_device(
+    device_id: int, session: AsyncSession = Depends(get_session)
+) -> None:
     device = await session.get(DeviceModel, device_id)
     if device is None:
         raise HTTPException(404, "Device not found")
@@ -121,7 +130,7 @@ async def delete_device(device_id: int, session: AsyncSession = Depends(get_sess
 
 
 @router.get("/{device_id}/capabilities")
-async def device_capabilities(device_id: int):
+async def device_capabilities(device_id: int) -> dict[str, Any]:
     manager = get_manager()
     managed = manager.get(device_id)
     if managed is None:
@@ -141,7 +150,7 @@ async def device_capabilities(device_id: int):
 
 
 @router.get("/{device_id}/state")
-async def device_state(device_id: int):
+async def device_state(device_id: int) -> dict[str, Any]:
     manager = get_manager()
     state = manager.get_state(device_id)
     if state is None:
@@ -150,10 +159,10 @@ async def device_state(device_id: int):
 
 
 @router.post("/{device_id}/command")
-async def device_command(device_id: int, body: CommandRequest):
+async def device_command(device_id: int, body: CommandRequest) -> dict[str, Any]:
     manager = get_manager()
     try:
         await manager.execute_command(device_id, body.command, body.args)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        raise HTTPException(400, str(e)) from e
     return {"ok": True}

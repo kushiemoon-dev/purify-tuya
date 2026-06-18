@@ -4,7 +4,7 @@ import { useDeviceState } from '@/shared/hooks/useDeviceState'
 const RADIUS = 90
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
-export function HumidityGauge({ deviceId }: { deviceId?: number }) {
+export function HumidityGauge({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
 

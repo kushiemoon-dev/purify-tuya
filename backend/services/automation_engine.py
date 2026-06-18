@@ -1,7 +1,9 @@
 import asyncio
+import contextlib
 import json
 import logging
 import time
+from collections.abc import Awaitable, Callable
 
 from sqlalchemy import select
 
@@ -14,7 +16,7 @@ logger = logging.getLogger("purify.automation")
 class AutomationEngine:
     """Evaluates threshold and schedule-based automation rules."""
 
-    def __init__(self, execute_action):
+    def __init__(self, execute_action: Callable[[str, dict], Awaitable[None]]) -> None:
         self._execute_action = (
             execute_action  # async (action_type, action_config) -> None
         )
@@ -27,15 +29,16 @@ class AutomationEngine:
     async def stop(self) -> None:
         if self._schedule_task:
             self._schedule_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._schedule_task
-            except asyncio.CancelledError:
-                pass
 
     async def evaluate_on_poll(
         self, device_id: int, metrics: dict[str, float]
     ) -> list[int]:
-        """Evaluate threshold automations after a device poll. Returns triggered automation IDs."""
+        """Evaluate threshold automations after a device poll.
+
+        Returns triggered automation IDs.
+        """
         triggered = []
         async with async_session() as session:
             result = await session.execute(

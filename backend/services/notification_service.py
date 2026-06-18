@@ -1,6 +1,8 @@
 import logging
+from typing import cast
 
 from sqlalchemy import func, select, update
+from sqlalchemy.engine import CursorResult
 
 from db.engine import async_session
 from db.models import Notification
@@ -55,10 +57,13 @@ async def get_unread_count() -> int:
 async def mark_read(notification_id: int) -> bool:
     """Mark a single notification as read."""
     async with async_session() as session:
-        result = await session.execute(
-            update(Notification)
-            .where(Notification.id == notification_id)
-            .values(read=True)
+        result = cast(
+            CursorResult,
+            await session.execute(
+                update(Notification)
+                .where(Notification.id == notification_id)
+                .values(read=True)
+            ),
         )
         await session.commit()
         return result.rowcount > 0
@@ -67,10 +72,13 @@ async def mark_read(notification_id: int) -> bool:
 async def mark_all_read() -> int:
     """Mark all notifications as read. Returns count updated."""
     async with async_session() as session:
-        result = await session.execute(
-            update(Notification)
-            .where(Notification.read == False)  # noqa: E712
-            .values(read=True)
+        result = cast(
+            CursorResult,
+            await session.execute(
+                update(Notification)
+                .where(Notification.read == False)  # noqa: E712
+                .values(read=True)
+            ),
         )
         await session.commit()
         return result.rowcount

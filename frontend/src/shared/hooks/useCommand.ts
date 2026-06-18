@@ -2,9 +2,8 @@ import { useCallback } from 'react'
 import { useDeviceStore } from '../stores/deviceStore'
 import type { DeviceState } from '../lib/types'
 
-export function useCommand(deviceId?: number) {
+export function useCommand(deviceId: number) {
   const optimisticUpdate = useDeviceStore((s) => s.optimisticUpdate)
-  const optimisticUpdateLegacy = useDeviceStore((s) => s.optimisticUpdateLegacy)
   const rollback = useDeviceStore((s) => s.rollback)
   const setPending = useDeviceStore((s) => s.setPending)
   const setError = useDeviceStore((s) => s.setError)
@@ -12,16 +11,12 @@ export function useCommand(deviceId?: number) {
 
   const send = useCallback(
     async (key: string, fn: () => Promise<unknown>, patch?: Partial<DeviceState>) => {
-      const pendingKey = deviceId !== undefined ? `${deviceId}:${key}` : key
+      const pendingKey = `${deviceId}:${key}`
       if (pending[pendingKey]) return
       setPending(pendingKey, true)
       setError(null)
       if (patch) {
-        if (deviceId !== undefined) {
-          optimisticUpdate(deviceId, patch)
-        } else {
-          optimisticUpdateLegacy(patch)
-        }
+        optimisticUpdate(deviceId, patch)
       }
       try {
         await fn()
@@ -34,13 +29,12 @@ export function useCommand(deviceId?: number) {
         setPending(pendingKey, false)
       }
     },
-    [deviceId, pending, setPending, setError, optimisticUpdate, optimisticUpdateLegacy, rollback],
+    [deviceId, pending, setPending, setError, optimisticUpdate, rollback],
   )
 
   const isPending = useCallback(
     (key: string) => {
-      const pendingKey = deviceId !== undefined ? `${deviceId}:${key}` : key
-      return !!pending[pendingKey]
+      return !!pending[`${deviceId}:${key}`]
     },
     [deviceId, pending],
   )

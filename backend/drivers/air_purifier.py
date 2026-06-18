@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 from drivers.base import DeviceCapabilities, DeviceDriver, DeviceSnapshot
 from drivers.registry import register_driver
@@ -59,12 +60,16 @@ COMMAND_MAP = {
 @register_driver("air_purifier")
 class AirPurifierDriver(DeviceDriver):
     def __init__(
-        self, device_id: str = "", device_ip: str = "", local_key: str = "", **_
-    ):
+        self,
+        device_id: str = "",
+        device_ip: str = "",
+        local_key: str = "",
+        **_: Any,
+    ) -> None:
         self._device_id = device_id
         self._device_ip = device_ip
         self._local_key = local_key
-        self._device = None
+        self._device: Any = None
 
     def connect(self) -> None:
         import tinytuya
@@ -102,7 +107,7 @@ class AirPurifierDriver(DeviceDriver):
 class MockAirPurifierDriver(DeviceDriver):
     """Simulated air purifier for development."""
 
-    def __init__(self, **_):
+    def __init__(self, **_: Any) -> None:
         self._dps: dict = {
             DPS_SWITCH: False,
             DPS_PM25: 35,

@@ -50,9 +50,9 @@ def patch_db_session(db_engine, _test_session_maker, monkeypatch):
     monkeypatch.setattr(engine_module, "async_session", _test_session_maker)
 
     # Patch the already-imported references in service modules
-    import services.notification_service as notif_mod
-    import services.history_service as hist_mod
     import services.automation_engine as auto_mod
+    import services.history_service as hist_mod
+    import services.notification_service as notif_mod
 
     monkeypatch.setattr(notif_mod, "async_session", _test_session_maker)
     monkeypatch.setattr(hist_mod, "async_session", _test_session_maker)

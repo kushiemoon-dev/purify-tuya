@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,13 +12,17 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 
 
 @router.get("", response_model=list[RoomResponse])
-async def list_rooms(session: AsyncSession = Depends(get_session)):
+async def list_rooms(
+    session: AsyncSession = Depends(get_session),
+) -> Sequence[Room]:
     result = await session.execute(select(Room).order_by(Room.sort_order, Room.id))
     return result.scalars().all()
 
 
 @router.post("", response_model=RoomResponse, status_code=201)
-async def create_room(body: RoomCreate, session: AsyncSession = Depends(get_session)):
+async def create_room(
+    body: RoomCreate, session: AsyncSession = Depends(get_session)
+) -> Room:
     room = Room(name=body.name, icon=body.icon, sort_order=body.sort_order)
     session.add(room)
     await session.commit()
@@ -29,7 +35,7 @@ async def update_room(
     room_id: int,
     body: RoomUpdate,
     session: AsyncSession = Depends(get_session),
-):
+) -> Room:
     room = await session.get(Room, room_id)
     if room is None:
         raise HTTPException(404, "Room not found")
@@ -42,7 +48,9 @@ async def update_room(
 
 
 @router.delete("/{room_id}", status_code=204)
-async def delete_room(room_id: int, session: AsyncSession = Depends(get_session)):
+async def delete_room(
+    room_id: int, session: AsyncSession = Depends(get_session)
+) -> None:
     room = await session.get(Room, room_id)
     if room is None:
         raise HTTPException(404, "Room not found")

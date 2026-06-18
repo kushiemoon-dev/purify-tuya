@@ -1,4 +1,5 @@
 import random
+from typing import Any
 
 import tinytuya
 
@@ -66,8 +67,12 @@ COMMAND_MAP = {
 @register_driver("dehumidifier")
 class DehumidifierDriver(DeviceDriver):
     def __init__(
-        self, device_id: str = "", device_ip: str = "", local_key: str = "", **_
-    ):
+        self,
+        device_id: str = "",
+        device_ip: str = "",
+        local_key: str = "",
+        **_: Any,
+    ) -> None:
         self._device_id = device_id
         self._device_ip = device_ip
         self._local_key = local_key
@@ -107,7 +112,7 @@ class DehumidifierDriver(DeviceDriver):
 class MockDehumidifierDriver(DeviceDriver):
     """Simulated dehumidifier for development — preserves v1 drift behavior."""
 
-    def __init__(self, **_):
+    def __init__(self, **_: Any) -> None:
         self._dps: dict = {
             DPS_SWITCH: False,
             DPS_HUMIDITY_SET: 50,

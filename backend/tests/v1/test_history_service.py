@@ -95,7 +95,7 @@ class TestCleanupOldReadings:
         # Insert an old reading directly
         old_reading = Reading(
             device_id=device_id,
-            timestamp=datetime.datetime.utcnow() - datetime.timedelta(days=10),
+            timestamp=datetime.datetime.now(datetime.UTC) - datetime.timedelta(days=10),
             metric="humidity_current",
             value=50.0,
         )

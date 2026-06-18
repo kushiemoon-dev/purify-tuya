@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 
-export function FilterLife({ deviceId }: { deviceId?: number }) {
+export function FilterLife({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
 

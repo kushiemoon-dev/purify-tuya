@@ -4,7 +4,6 @@ import { useNotificationStore } from '../stores/notificationStore'
 
 export function useWebSocket() {
   const updateDevice = useDeviceStore((s) => s.updateDevice)
-  const updateLegacy = useDeviceStore((s) => s.updateLegacy)
   const setConnected = useDeviceStore((s) => s.setConnected)
   const addNotification = useNotificationStore((s) => s.addNotification)
   const retryDelay = useRef(1000)
@@ -31,14 +30,9 @@ export function useWebSocket() {
           const data = JSON.parse(event.data)
 
           if (data.type === 'notification') {
-            // Real-time notification
             addNotification(data)
           } else if (data.type === 'device_update' && typeof data.device_id === 'number') {
-            // Multi-device message
             updateDevice(data.device_id, data)
-          } else {
-            // Legacy single-device message (no type field)
-            updateLegacy(data)
           }
         } catch {
           // ignore malformed messages
@@ -65,5 +59,5 @@ export function useWebSocket() {
       if (retryTimer) clearTimeout(retryTimer)
       ws?.close()
     }
-  }, [updateDevice, updateLegacy, setConnected, addNotification])
+  }, [updateDevice, setConnected, addNotification])
 }

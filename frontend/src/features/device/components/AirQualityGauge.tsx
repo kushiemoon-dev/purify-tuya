@@ -23,7 +23,7 @@ function pmLabel(pm25: number, t: (key: string) => string): string {
   return t('airPurifier.aqBad')
 }
 
-export function AirQualityGauge({ deviceId }: { deviceId?: number }) {
+export function AirQualityGauge({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
 

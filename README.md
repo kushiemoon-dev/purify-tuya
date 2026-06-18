@@ -2,11 +2,12 @@
 
 # Purify
 
-### Local control for your Tuya device — no cloud required
+### Multi-device local control for Tuya appliances — no cloud required
 
+[![CI](https://img.shields.io/github/actions/workflow/status/kushiemoon-dev/purify-tuya/ci.yml?branch=master&style=flat-square&label=CI)](https://github.com/kushiemoon-dev/purify-tuya/actions)
 [![License](https://img.shields.io/badge/license-MIT-gray?style=flat-square)](LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-![Linux](https://img.shields.io/badge/Linux-any-FCC624?style=flat-square&logo=linux&logoColor=black)
+[![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 
 <img src="screenshot.png" alt="Purify screenshot" width="620">
 
@@ -16,39 +17,50 @@
 
 ## Overview
 
-**Purify** is a PWA for controlling a Tuya-based dehumidifier/air purifier over your local network. No cloud account, no internet dependency — just direct LAN communication with your device via the Tuya protocol.
+**Purify** is a self-hosted PWA for controlling Tuya-based appliances (dehumidifiers, air purifiers) over your local network. No cloud account, no internet dependency — just direct LAN communication via the Tuya protocol.
+
+Manage multiple devices from a single dashboard with real-time updates, automation rules, and room organisation.
 
 ---
 
 ## Features
 
-- **Real-time WebSocket** — Live device state pushed to all connected clients
-- **SVG Humidity Gauge** — Animated radial gauge showing current humidity
-- **Humidity History** — Rolling chart of the last 60 readings
-- **Mode Control** — Manual, Laundry, Sleep, and Purify modes
-- **Timer & On-Timer** — Off-timer (1–24h) and scheduled on-timer
-- **Child Lock** — Toggle child lock remotely
-- **Tank & Defrost Status** — Visual indicators for tank-full and defrosting states
-- **Glass-morphism UI** — Frosted-glass design built with Alpine.js
-- **PWA Offline** — Installable as a Progressive Web App
-- **Mock Mode** — Develop and demo without a real device
-- **DPS Discovery** — Logs unknown Tuya data points for reverse engineering
+- **Multi-device** — Add and control multiple Tuya devices from one dashboard
+- **Driver architecture** — Dehumidifier and air purifier drivers with extensible plugin system
+- **Automations** — Threshold-based rules with cooldowns (e.g. "turn on when humidity > 70%")
+- **Rooms** — Group devices by location
+- **Notifications** — Real-time alerts for faults, automations, and device events
+- **History & charts** — Per-device metric history with configurable retention
+- **Real-time WebSocket** — Live state pushed to all connected clients
+- **React + TypeScript** — Modern frontend with Zustand state management
+- **PWA offline** — Installable as a Progressive Web App
+- **i18n** — French, English, and German
+- **Mock mode** — Develop and demo without real hardware
+- **Legacy API** — Single-device v0 API preserved for backward compatibility
 
 ---
 
-## Install
+## Quick Start
 
 ```bash
 git clone https://github.com/kushiemoon-dev/purify-tuya.git
-cd purify-tuya/backend
+cd purify-tuya
 
+# Backend
+cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env   # configure your device (see below)
 
-# Configure your device (see Configuration below)
-cp .env.example .env
+# Frontend (dev mode)
+cd ../frontend
+npm install
+npm run dev
 
+# Or production build
+npm run build
+cd ../backend
 uvicorn main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -58,57 +70,87 @@ Open **http://localhost:8000/purify/** in your browser.
 
 ## Configuration
 
-All settings are read from environment variables or a `.env` file in `backend/`.
+Settings are read from environment variables or a `.env` file in `backend/`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DEVICE_ID` | _(required)_ | Tuya device ID |
+| `DEVICE_ID` | _(required)_ | Tuya device ID (legacy single-device) |
 | `DEVICE_IP` | _(required)_ | Device IP on your LAN |
 | `LOCAL_KEY` | _(required)_ | Tuya local encryption key |
 | `POLL_INTERVAL` | `5` | Seconds between device polls |
 | `MOCK_DEVICE` | `true` | Use simulated device (no hardware needed) |
 
+Additional devices are managed via the UI or the v1 REST API.
+
 To obtain your Tuya credentials, follow the [tinytuya setup guide](https://github.com/jasonacox/tinytuya#setup).
 
 ---
 
-## How It Works
+## Architecture
 
 ```
-Browser (PWA)
-     │
-     ▼
-  FastAPI
-  /purify/*
-     │
-     ├── REST API ──► Device commands (power, mode, humidity, timers)
-     │
-     └── WebSocket ──► Real-time state broadcast
-            │
-            ▼
-      tinytuya (LAN)
-            │
-            ▼
-      Tuya Device
-    (protocol v3.3)
+React SPA (PWA)              FastAPI backend
+┌─────────────┐         ┌──────────────────────┐
+│  Zustand     │◄──ws──►│  WebSocket manager    │
+│  stores      │        │                       │
+│  components  │──http──►│  v1 REST API          │
+└─────────────┘         │    /devices            │
+                        │    /rooms              │
+                        │    /automations        │
+                        │    /notifications      │
+                        │    /history            │
+                        │                       │
+                        │  Device Manager        │
+                        │    ├─ Dehumidifier     │
+                        │    └─ Air Purifier     │
+                        │                       │
+                        │  Automation Engine     │
+                        │  SQLite (async)        │
+                        └──────────┬─────────────┘
+                                   │ LAN
+                              Tuya Devices
+                            (protocol v3.3)
 ```
 
 ---
 
-## API Endpoints
+## API
+
+### v1 API (multi-device)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/purify/api/v1/devices` | List all devices |
+| `POST` | `/purify/api/v1/devices` | Add a device |
+| `GET` | `/purify/api/v1/devices/:id/state` | Device state |
+| `POST` | `/purify/api/v1/devices/:id/command` | Send command |
+| `GET` | `/purify/api/v1/devices/:id/capabilities` | Driver capabilities |
+| `GET/POST` | `/purify/api/v1/rooms` | Room management |
+| `GET/POST` | `/purify/api/v1/automations` | Automation rules |
+| `GET` | `/purify/api/v1/notifications` | Notification feed |
+| `GET` | `/purify/api/v1/devices/:id/history` | Metric history |
+| `WS` | `/purify/ws` | Real-time updates |
+
+### Legacy API (single-device)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/purify/api/state` | Current device state |
-| `GET` | `/purify/api/raw-dps` | Raw Tuya data points |
-| `GET` | `/purify/api/humidity-history` | Last 60 humidity readings |
-| `POST` | `/purify/api/power` | `{"on": true}` — Toggle power |
-| `POST` | `/purify/api/humidity` | `{"value": 50}` — Set target (35–70, multiples of 5) |
-| `POST` | `/purify/api/mode` | `{"mode": "manual"}` — Set mode |
-| `POST` | `/purify/api/child-lock` | `{"on": true}` — Toggle child lock |
-| `POST` | `/purify/api/timer` | `{"hours": "3h"}` — Set off-timer |
-| `POST` | `/purify/api/on-timer` | `{"hours": "8h"}` — Set on-timer |
-| `WS` | `/purify/ws` | Live state updates via WebSocket |
+| `POST` | `/purify/api/power` | Toggle power |
+| `POST` | `/purify/api/humidity` | Set target humidity |
+| `POST` | `/purify/api/mode` | Set mode |
+
+---
+
+## Testing
+
+```bash
+# Backend (149 tests)
+cd backend && pytest tests/ -v --cov=services --cov=drivers --cov=api
+
+# Frontend (28 tests)
+cd frontend && npx vitest run
+```
 
 ---
 
@@ -132,11 +174,21 @@ Requires `mod_proxy`, `mod_proxy_http`, and `mod_proxy_wstunnel`.
 
 ---
 
+## Tech Stack
+
+**Backend:** FastAPI, SQLAlchemy (async), tinytuya, Alembic, Pydantic
+**Frontend:** React 19, TypeScript, Vite, Zustand, Recharts, Tailwind CSS
+**Testing:** pytest, pytest-asyncio, Vitest, Testing Library
+**CI:** GitHub Actions (4 parallel jobs)
+
+---
+
 ## Credits
 
 - [tinytuya](https://github.com/jasonacox/tinytuya) — Local Tuya device communication
 - [FastAPI](https://fastapi.tiangolo.com) — Python web framework
-- [Alpine.js](https://alpinejs.dev) — Lightweight reactive UI
+- [React](https://react.dev) — UI library
+- [Vite](https://vitejs.dev) — Frontend build tool
 
 ---
 

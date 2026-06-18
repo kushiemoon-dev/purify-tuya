@@ -1,0 +1,29 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.10
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        files: ^backend/(services|drivers|api|db|schemas)/
+        args: ["--config-file", "backend/pyproject.toml"]
+        additional_dependencies:
+          - "sqlalchemy[asyncio]>=2.0,<3.0"
+          - "fastapi>=0.115,<1.0"
+          - "pydantic-settings>=2.0,<3.0"
+          - "aiosqlite>=0.20,<1.0"

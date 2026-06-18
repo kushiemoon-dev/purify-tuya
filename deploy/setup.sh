@@ -12,7 +12,7 @@ sed -i 's/^#LoadModule proxy_wstunnel_module/LoadModule proxy_wstunnel_module/' 
 
 # 2. Install Apache config
 echo "Installing Apache proxy config..."
-cp /srv/http/purify/deploy/purify-apache.conf /etc/httpd/conf/conf.d/purify.conf
+cp /srv/http/purify-tuya/deploy/purify-apache.conf /etc/httpd/conf/conf.d/purify.conf
 
 # 3. Test Apache config
 echo "Testing Apache config..."
@@ -20,7 +20,7 @@ apachectl configtest
 
 # 4. Install systemd service
 echo "Installing systemd service..."
-cp /srv/http/purify/purify.service /etc/systemd/system/purify.service
+cp /srv/http/purify-tuya/purify.service /etc/systemd/system/purify.service
 systemctl daemon-reload
 
 # 5. Enable and start

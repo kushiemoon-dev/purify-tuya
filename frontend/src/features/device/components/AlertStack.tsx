@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 import { useDeviceStore } from '@/shared/stores/deviceStore'
 
-export function AlertStack({ deviceId }: { deviceId?: number }) {
+export function AlertStack({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
   const error = useDeviceStore((s) => s.error)

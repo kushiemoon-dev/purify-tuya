@@ -72,7 +72,7 @@ class TestAutomationCRUD:
         assert resp.status_code == 404
 
     async def test_json_configs_roundtrip(self, api_client):
-        """Ensure trigger_config/action_config are stored as JSON and returned as dicts."""
+        """Ensure trigger_config/action_config are stored as JSON and returned as dicts."""  # noqa: E501
         create = await api_client.post("/purify/api/v1/automations", json=AUTO_PAYLOAD)
         data = create.json()
         assert isinstance(data["trigger_config"], dict)

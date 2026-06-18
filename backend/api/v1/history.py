@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, Query
 
 from services.history_service import get_history
@@ -27,7 +29,7 @@ async def device_history(
     metric: str = Query(default="humidity_current"),
     range: str = Query(default="24h"),
     resolution: str | None = Query(default=None),
-):
+) -> dict[str, Any]:
     range_hours = RANGE_MAP.get(range)
     if range_hours is None:
         range_hours = 24

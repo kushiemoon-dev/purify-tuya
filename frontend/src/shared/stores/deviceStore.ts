@@ -16,28 +16,19 @@ interface DeviceStore {
   readonly pending: Readonly<Record<string, boolean>>
   readonly error: string | null
 
-  // Legacy single-device state (for backward compat during Phase 1→3 transition)
-  readonly legacyState: DeviceState | null
-  readonly legacyHistory: readonly HumidityReading[]
-  readonly legacyLastUpdated: number | null
   readonly _rollbackState: DeviceState | null
   readonly _rollbackDeviceId: number | null
 
   // Actions
   updateDevice: (deviceId: number, data: DeviceState & { humidity_history?: HumidityReading[] }) => void
-  updateLegacy: (data: DeviceState & { humidity_history?: HumidityReading[] }) => void
   setDeviceList: (devices: DeviceInfo[]) => void
   setRooms: (rooms: RoomInfo[]) => void
   optimisticUpdate: (deviceId: number, patch: Partial<DeviceState>) => void
-  optimisticUpdateLegacy: (patch: Partial<DeviceState>) => void
   rollback: () => void
   setConnected: (connected: boolean) => void
   setPending: (key: string, value: boolean) => void
   setError: (error: string | null) => void
 }
-
-const stored = localStorage.getItem('purify_state')
-const initialLegacy: DeviceState | null = stored ? JSON.parse(stored) : null
 
 export const useDeviceStore = create<DeviceStore>((set) => ({
   devices: {},
@@ -46,9 +37,6 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
   connected: false,
   pending: {},
   error: null,
-  legacyState: initialLegacy,
-  legacyHistory: [],
-  legacyLastUpdated: null,
   _rollbackState: null,
   _rollbackDeviceId: null,
 
@@ -62,18 +50,6 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
     }
     return {
       devices: { ...prev.devices, [deviceId]: perDevice },
-      _rollbackState: null,
-      _rollbackDeviceId: null,
-    }
-  }),
-
-  updateLegacy: (data) => set((prev) => {
-    const { humidity_history, ...stateOnly } = data as DeviceState & { humidity_history?: HumidityReading[] }
-    localStorage.setItem('purify_state', JSON.stringify(stateOnly))
-    return {
-      legacyState: stateOnly as DeviceState,
-      legacyHistory: humidity_history ?? prev.legacyHistory,
-      legacyLastUpdated: Date.now(),
       _rollbackState: null,
       _rollbackDeviceId: null,
     }
@@ -95,31 +71,15 @@ export const useDeviceStore = create<DeviceStore>((set) => ({
     }
   }),
 
-  optimisticUpdateLegacy: (patch) => set((prev) => {
-    if (!prev.legacyState) return prev
-    return {
-      _rollbackState: prev.legacyState,
-      _rollbackDeviceId: null,
-      legacyState: { ...prev.legacyState, ...patch },
-    }
-  }),
-
   rollback: () => set((prev) => {
-    if (!prev._rollbackState) return prev
-    if (prev._rollbackDeviceId !== null) {
-      const existing = prev.devices[prev._rollbackDeviceId]
-      if (!existing) return { _rollbackState: null, _rollbackDeviceId: null }
-      return {
-        devices: {
-          ...prev.devices,
-          [prev._rollbackDeviceId]: { ...existing, state: prev._rollbackState },
-        },
-        _rollbackState: null,
-        _rollbackDeviceId: null,
-      }
-    }
+    if (!prev._rollbackState || prev._rollbackDeviceId === null) return { _rollbackState: null, _rollbackDeviceId: null }
+    const existing = prev.devices[prev._rollbackDeviceId]
+    if (!existing) return { _rollbackState: null, _rollbackDeviceId: null }
     return {
-      legacyState: prev._rollbackState,
+      devices: {
+        ...prev.devices,
+        [prev._rollbackDeviceId]: { ...existing, state: prev._rollbackState },
+      },
       _rollbackState: null,
       _rollbackDeviceId: null,
     }

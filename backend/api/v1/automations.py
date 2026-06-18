@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -12,7 +13,9 @@ router = APIRouter(prefix="/automations", tags=["automations"])
 
 
 @router.get("", response_model=list[AutomationResponse])
-async def list_automations(session: AsyncSession = Depends(get_session)):
+async def list_automations(
+    session: AsyncSession = Depends(get_session),
+) -> list[dict[str, Any]]:
     result = await session.execute(select(Automation).order_by(Automation.id))
     rows = result.scalars().all()
     return [_to_response(a) for a in rows]
@@ -21,7 +24,7 @@ async def list_automations(session: AsyncSession = Depends(get_session)):
 @router.get("/{automation_id}", response_model=AutomationResponse)
 async def get_automation(
     automation_id: int, session: AsyncSession = Depends(get_session)
-):
+) -> dict[str, Any]:
     auto = await session.get(Automation, automation_id)
     if auto is None:
         raise HTTPException(404, "Automation not found")
@@ -31,7 +34,7 @@ async def get_automation(
 @router.post("", response_model=AutomationResponse, status_code=201)
 async def create_automation(
     body: AutomationCreate, session: AsyncSession = Depends(get_session)
-):
+) -> dict[str, Any]:
     auto = Automation(
         name=body.name,
         trigger_type=body.trigger_type,
@@ -52,7 +55,7 @@ async def update_automation(
     automation_id: int,
     body: AutomationUpdate,
     session: AsyncSession = Depends(get_session),
-):
+) -> dict[str, Any]:
     auto = await session.get(Automation, automation_id)
     if auto is None:
         raise HTTPException(404, "Automation not found")
@@ -72,7 +75,7 @@ async def update_automation(
 @router.delete("/{automation_id}", status_code=204)
 async def delete_automation(
     automation_id: int, session: AsyncSession = Depends(get_session)
-):
+) -> None:
     auto = await session.get(Automation, automation_id)
     if auto is None:
         raise HTTPException(404, "Automation not found")
@@ -80,7 +83,7 @@ async def delete_automation(
     await session.commit()
 
 
-def _to_response(auto: Automation) -> dict:
+def _to_response(auto: Automation) -> dict[str, Any]:
     return {
         "id": auto.id,
         "name": auto.name,

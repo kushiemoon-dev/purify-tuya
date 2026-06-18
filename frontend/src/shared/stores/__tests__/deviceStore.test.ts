@@ -28,13 +28,9 @@ describe('deviceStore', () => {
       connected: false,
       pending: {},
       error: null,
-      legacyState: null,
-      legacyHistory: [],
-      legacyLastUpdated: null,
       _rollbackState: null,
       _rollbackDeviceId: null,
     })
-    localStorage.clear()
   })
 
   describe('updateDevice', () => {
@@ -66,20 +62,6 @@ describe('deviceStore', () => {
     })
   })
 
-  describe('updateLegacy', () => {
-    it('sets legacy state and persists to localStorage', () => {
-      useDeviceStore.getState().updateLegacy(makeState({ switch: true }))
-      expect(useDeviceStore.getState().legacyState?.switch).toBe(true)
-      expect(localStorage.getItem('purify_state')).toBeTruthy()
-    })
-
-    it('sets legacy history from data', () => {
-      const data = { ...makeState(), humidity_history: [{ t: 1, v: 55 }] }
-      useDeviceStore.getState().updateLegacy(data)
-      expect(useDeviceStore.getState().legacyHistory).toEqual([{ t: 1, v: 55 }])
-    })
-  })
-
   describe('optimisticUpdate', () => {
     it('applies patch and saves rollback', () => {
       useDeviceStore.getState().updateDevice(1, makeState({ switch: false }))
@@ -104,13 +86,6 @@ describe('deviceStore', () => {
       useDeviceStore.getState().rollback()
       expect(useDeviceStore.getState().devices[1].state.switch).toBe(false)
       expect(useDeviceStore.getState()._rollbackState).toBeNull()
-    })
-
-    it('restores legacy state from rollback', () => {
-      useDeviceStore.getState().updateLegacy(makeState({ switch: false }))
-      useDeviceStore.getState().optimisticUpdateLegacy({ switch: true })
-      useDeviceStore.getState().rollback()
-      expect(useDeviceStore.getState().legacyState?.switch).toBe(false)
     })
 
     it('is a no-op when no rollback state', () => {

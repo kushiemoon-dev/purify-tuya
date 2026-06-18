@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 import { useCommand } from '@/shared/hooks/useCommand'
-import { setMode, sendDeviceCommand } from '@/shared/lib/api'
+import { sendDeviceCommand } from '@/shared/lib/api'
 import { MODES } from '@/shared/lib/types'
 import type { Mode } from '@/shared/lib/types'
 
@@ -13,7 +13,7 @@ const MODE_ICONS: Record<string, string> = {
   auto: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z',
 }
 
-export function ModeGrid({ deviceId }: { deviceId?: number }) {
+export function ModeGrid({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
   const { send, isPending } = useCommand(deviceId)
@@ -26,10 +26,7 @@ export function ModeGrid({ deviceId }: { deviceId?: number }) {
     : [...MODES]
 
   function handleMode(mode: string) {
-    const fn = deviceId !== undefined
-      ? () => sendDeviceCommand(deviceId, 'set_mode', { mode })
-      : () => setMode(mode)
-    send('mode', fn, { mode: mode as Mode })
+    send('mode', () => sendDeviceCommand(deviceId, 'set_mode', { mode }), { mode: mode as Mode })
   }
 
   return (

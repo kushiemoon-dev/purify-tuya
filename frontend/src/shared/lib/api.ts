@@ -1,6 +1,5 @@
-import type { AutomationInfo, DeviceInfo, HistoryResponse, RoomInfo, Settings, TimeRange } from './types'
+import type { AutomationInfo, DeviceInfo, HistoryResponse, RoomInfo, TimeRange } from './types'
 
-const API_BASE = '/purify/api'
 const V1_BASE = '/purify/api/v1'
 
 async function request<T = unknown>(url: string, options?: RequestInit): Promise<T> {
@@ -31,40 +30,6 @@ function patch<T = unknown>(url: string, body: unknown): Promise<T> {
 
 function del(url: string): Promise<void> {
   return request<void>(url, { method: 'DELETE' })
-}
-
-// ── Legacy single-device API (Phase 1 compat) ──
-
-export function setPower(on: boolean) {
-  return post(`${API_BASE}/power`, { on })
-}
-
-export function setHumidity(value: number) {
-  return post(`${API_BASE}/humidity`, { value })
-}
-
-export function setMode(mode: string) {
-  return post(`${API_BASE}/mode`, { mode })
-}
-
-export function setChildLock(on: boolean) {
-  return post(`${API_BASE}/child-lock`, { on })
-}
-
-export function setTimer(hours: string) {
-  return post(`${API_BASE}/timer`, { hours })
-}
-
-export function setOnTimer(hours: string) {
-  return post(`${API_BASE}/on-timer`, { hours })
-}
-
-export function fetchSettings(): Promise<Settings> {
-  return request<Settings>(`${API_BASE}/settings`)
-}
-
-export function postSettings(data: Settings): Promise<void> {
-  return post(`${API_BASE}/settings`, data)
 }
 
 // ── v1 Multi-device API ──

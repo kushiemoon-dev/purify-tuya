@@ -1,8 +1,6 @@
 import asyncio
 import logging
 import os
-import time
-from collections import deque
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,13 +10,16 @@ from sqlalchemy import select
 
 from api.v1.devices import set_manager
 from api.v1.router import v1_router
-from config import settings_holder
 from db.engine import async_session, init_db
 from db.models import DeviceModel
-from device import create_device
-from drivers.air_purifier import AirPurifierDriver, MockAirPurifierDriver  # noqa: F401 — register drivers
-from drivers.dehumidifier import DehumidifierDriver, MockDehumidifierDriver  # noqa: F401 — register drivers
-from routes import init_routes
+from drivers.air_purifier import (  # noqa: F401 — register drivers
+    AirPurifierDriver,
+    MockAirPurifierDriver,
+)
+from drivers.dehumidifier import (  # noqa: F401 — register drivers
+    DehumidifierDriver,
+    MockDehumidifierDriver,
+)
 from services.automation_engine import AutomationEngine
 from services.device_manager import DeviceManager
 from services.notification_service import create_notification
@@ -26,75 +27,9 @@ from websocket import ConnectionManager
 
 logger = logging.getLogger("purify")
 
-KNOWN_DPS = {"1", "2", "4", "14", "16", "17", "18", "19", "101"}
-MAX_HISTORY = 60
+# ── Multi-device manager ──
 
-
-# ── Legacy single-device state (kept for v1 compat routes) ──
-
-
-class DeviceHolder:
-    def __init__(self, device):
-        self.device = device
-
-
-holder = DeviceHolder(create_device(settings_holder.settings))
 ws_manager = ConnectionManager()
-current_state: dict | None = None
-raw_dps: dict = {}
-humidity_history: deque[dict] = deque(maxlen=MAX_HISTORY)
-poll_now = asyncio.Event()
-device_replaced = asyncio.Event()
-
-
-async def poll_loop():
-    global current_state, raw_dps
-    while True:
-        try:
-            result = await asyncio.to_thread(holder.device.poll)
-            if result is not None:
-                state, raw = result
-                raw_dps = raw
-                current_state = state.to_dict()
-
-                unknown = {k: v for k, v in raw.items() if k not in KNOWN_DPS}
-                if unknown:
-                    logger.info("Unknown DPS: %s", unknown)
-
-                humidity_history.append(
-                    {
-                        "t": int(time.time()),
-                        "v": state.humidity_current,
-                    }
-                )
-
-                broadcast = {
-                    **current_state,
-                    "humidity_history": list(humidity_history),
-                }
-                await ws_manager.broadcast(broadcast)
-        except Exception as e:
-            logger.exception("poll_loop error: %s", e)
-        poll_now.clear()
-        device_replaced.clear()
-        wait_tasks = [
-            asyncio.ensure_future(poll_now.wait()),
-            asyncio.ensure_future(device_replaced.wait()),
-        ]
-        try:
-            await asyncio.wait_for(
-                asyncio.wait(wait_tasks, return_when=asyncio.FIRST_COMPLETED),
-                timeout=settings_holder.settings.poll_interval,
-            )
-        except asyncio.TimeoutError:
-            pass
-        finally:
-            for t in wait_tasks:
-                t.cancel()
-
-
-# ── Multi-device manager (new v1 API) ──
-
 device_manager: DeviceManager | None = None
 automation_engine: AutomationEngine | None = None
 _prev_faults: dict[int, int] = {}  # device_id -> last fault bitmask
@@ -228,14 +163,9 @@ async def lifespan(app: FastAPI):
     if device_manager:
         device_manager.start_cleanup_task()
 
-    # Legacy single-device poll loop
-    holder.device.connect()
-    legacy_task = asyncio.create_task(poll_loop())
-
     yield
 
     # Shutdown
-    legacy_task.cancel()
     if automation_engine:
         await automation_engine.stop()
     if device_manager:
@@ -256,34 +186,7 @@ if os.environ.get("PURIFY_DEV"):
         allow_headers=["*"],
     )
 
-
-# ── Legacy routes (single device) ──
-
-
-def get_state():
-    return current_state
-
-
-def get_raw_dps():
-    return raw_dps
-
-
-def get_humidity_history():
-    return list(humidity_history)
-
-
-legacy_router = init_routes(
-    holder,
-    get_state,
-    get_raw_dps,
-    get_humidity_history,
-    poll_now,
-    settings_holder,
-    device_replaced,
-)
-app.include_router(legacy_router)
-
-# ── New v1 API (multi-device) ──
+# ── API v1 (multi-device) ──
 app.include_router(v1_router)
 
 
@@ -294,15 +197,7 @@ app.include_router(v1_router)
 async def websocket_endpoint(ws: WebSocket):
     await ws_manager.connect(ws)
     try:
-        # Send current legacy state
-        if current_state is not None:
-            broadcast = {
-                **current_state,
-                "humidity_history": list(humidity_history),
-            }
-            await ws.send_json(broadcast)
-
-        # Send all multi-device states
+        # Send current states for all managed devices on connect
         if device_manager:
             for device_id, state in device_manager.get_all_states().items():
                 await ws.send_json(

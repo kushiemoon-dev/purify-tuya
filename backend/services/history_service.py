@@ -1,7 +1,9 @@
 import datetime
 import logging
+from typing import cast
 
 from sqlalchemy import delete, select, text
+from sqlalchemy.engine import CursorResult
 
 from db.engine import async_session
 from db.models import Reading
@@ -19,7 +21,7 @@ async def write_reading(device_id: int, metric: str, value: float) -> None:
     async with async_session() as session:
         reading = Reading(
             device_id=device_id,
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=datetime.datetime.now(datetime.UTC),
             metric=metric,
             value=value,
         )
@@ -29,7 +31,7 @@ async def write_reading(device_id: int, metric: str, value: float) -> None:
 
 async def write_readings(device_id: int, metrics: dict[str, float]) -> None:
     """Write multiple metrics from a single poll."""
-    now = datetime.datetime.utcnow()
+    now = datetime.datetime.now(datetime.UTC)
     async with async_session() as session:
         for metric, value in metrics.items():
             session.add(
@@ -69,7 +71,7 @@ async def get_history(
         else:
             resolution_minutes = 60
 
-    since = datetime.datetime.utcnow() - datetime.timedelta(hours=range_hours)
+    since = datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=range_hours)
 
     async with async_session() as session:
         if resolution_minutes == 0:
@@ -94,7 +96,8 @@ async def get_history(
         result = await session.execute(
             text("""
                 SELECT
-                    CAST(strftime('%s', timestamp) AS INTEGER) / :bucket * :bucket AS bucket_ts,
+                    CAST(strftime('%s', timestamp) AS INTEGER)
+                        / :bucket * :bucket AS bucket_ts,
                     AVG(value) AS avg_value,
                     MIN(value) AS min_value,
                     MAX(value) AS max_value
@@ -125,10 +128,13 @@ async def get_history(
 
 async def cleanup_old_readings() -> int:
     """Delete readings older than retention policy. Returns count deleted."""
-    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=RAW_RETENTION_DAYS)
+    cutoff = datetime.datetime.now(datetime.UTC) - datetime.timedelta(
+        days=RAW_RETENTION_DAYS
+    )
     async with async_session() as session:
-        result = await session.execute(
-            delete(Reading).where(Reading.timestamp < cutoff)
+        result = cast(
+            CursorResult,
+            await session.execute(delete(Reading).where(Reading.timestamp < cutoff)),
         )
         await session.commit()
         count = result.rowcount

@@ -32,14 +32,16 @@ const fadeUp = {
 export function DevicePage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
-  const deviceId = id ? parseInt(id, 10) : undefined
-  const { state } = useDeviceState(deviceId)
+  const deviceIdRaw = id ? parseInt(id, 10) : undefined
+  const { state } = useDeviceState(deviceIdRaw ?? 0)
   const connected = useDeviceStore((s) => s.connected)
-  const lastUpdated = useLastUpdated(deviceId)
+  const lastUpdated = useLastUpdated(deviceIdRaw)
 
-  if (!state) {
+  if (deviceIdRaw === undefined || !state) {
     return <DevicePageSkeleton />
   }
+
+  const deviceId: number = deviceIdRaw
 
   const isAirPurifier = state.device_type === 'air_purifier'
 

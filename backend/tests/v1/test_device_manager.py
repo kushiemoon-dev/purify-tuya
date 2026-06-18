@@ -2,12 +2,12 @@
 
 import pytest
 
-from drivers.base import DeviceCapabilities, DeviceSnapshot
-from services.device_manager import DeviceManager, ManagedDevice, _detect_type
+import drivers.air_purifier  # noqa: F401
 
 # Import drivers to register them in the registry
 import drivers.dehumidifier  # noqa: F401
-import drivers.air_purifier  # noqa: F401
+from drivers.base import DeviceCapabilities, DeviceSnapshot
+from services.device_manager import DeviceManager, ManagedDevice, _detect_type
 
 
 class TestAddDevice:

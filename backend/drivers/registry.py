@@ -1,19 +1,24 @@
+from collections.abc import Callable
+from typing import Any
+
 from drivers.base import DeviceDriver
 
 _registry: dict[str, type[DeviceDriver]] = {}
 
 
-def register_driver(device_type: str):
+def register_driver(
+    device_type: str,
+) -> Callable[[type[DeviceDriver]], type[DeviceDriver]]:
     """Decorator to register a driver class for a device type."""
 
-    def wrapper(cls: type[DeviceDriver]):
+    def wrapper(cls: type[DeviceDriver]) -> type[DeviceDriver]:
         _registry[device_type] = cls
         return cls
 
     return wrapper
 
 
-def create_driver(device_type: str, **kwargs) -> DeviceDriver:
+def create_driver(device_type: str, **kwargs: Any) -> DeviceDriver:
     """Create a driver instance for the given device type."""
     cls = _registry.get(device_type)
     if cls is None:

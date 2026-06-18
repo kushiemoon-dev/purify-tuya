@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 import { useCommand } from '@/shared/hooks/useCommand'
-import { setTimer, setOnTimer, sendDeviceCommand } from '@/shared/lib/api'
+import { sendDeviceCommand } from '@/shared/lib/api'
 import { TIMER_VALUES } from '@/shared/lib/types'
 
 function TimerGroup({
@@ -41,7 +41,7 @@ function TimerGroup({
   )
 }
 
-export function TimerCard({ deviceId }: { deviceId?: number }) {
+export function TimerCard({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
   const { send, isPending } = useCommand(deviceId)
@@ -59,17 +59,11 @@ export function TimerCard({ deviceId }: { deviceId?: number }) {
   }
 
   function handleTimer(hours: string) {
-    const fn = deviceId !== undefined
-      ? () => sendDeviceCommand(deviceId, 'set_countdown', { hours })
-      : () => setTimer(hours)
-    send('timer', fn, { countdown_set: hours })
+    send('timer', () => sendDeviceCommand(deviceId, 'set_countdown', { hours }), { countdown_set: hours })
   }
 
   function handleOnTimer(hours: string) {
-    const fn = deviceId !== undefined
-      ? () => sendDeviceCommand(deviceId, 'set_on_timer', { hours })
-      : () => setOnTimer(hours)
-    send('on_timer', fn, { on_timer: hours })
+    send('on_timer', () => sendDeviceCommand(deviceId, 'set_on_timer', { hours }), { on_timer: hours })
   }
 
   return (

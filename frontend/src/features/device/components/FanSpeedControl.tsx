@@ -5,7 +5,7 @@ import { sendDeviceCommand } from '@/shared/lib/api'
 
 const SPEEDS = [1, 2, 3, 4, 5] as const
 
-export function FanSpeedControl({ deviceId }: { deviceId?: number }) {
+export function FanSpeedControl({ deviceId }: { deviceId: number }) {
   const { t } = useTranslation()
   const { state } = useDeviceState(deviceId)
   const { send, isPending } = useCommand(deviceId)
@@ -13,7 +13,6 @@ export function FanSpeedControl({ deviceId }: { deviceId?: number }) {
   const currentSpeed = state?.fan_speed ?? 1
 
   function handleSpeed(speed: number) {
-    if (deviceId === undefined) return
     send('fan_speed', () => sendDeviceCommand(deviceId, 'set_fan_speed', { speed }), { fan_speed: speed })
   }
 

@@ -4,12 +4,9 @@ import { useDeviceStore } from '../stores/deviceStore'
 
 export function useLastUpdated(deviceId?: number): string {
   const { t } = useTranslation()
-  const lastUpdated = useDeviceStore((s) => {
-    if (deviceId !== undefined) {
-      return s.devices[deviceId]?.lastUpdated ?? null
-    }
-    return s.legacyLastUpdated
-  })
+  const lastUpdated = useDeviceStore((s) =>
+    deviceId !== undefined ? s.devices[deviceId]?.lastUpdated ?? null : null,
+  )
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {

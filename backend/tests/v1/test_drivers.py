@@ -2,12 +2,12 @@
 
 import pytest
 
-from drivers.base import DeviceCapabilities, DeviceSnapshot
-from drivers.registry import create_driver, list_driver_types
+import drivers.air_purifier  # noqa: F401
 
 # Importing the driver modules registers them
 import drivers.dehumidifier  # noqa: F401
-import drivers.air_purifier  # noqa: F401
+from drivers.base import DeviceCapabilities, DeviceSnapshot
+from drivers.registry import create_driver, list_driver_types
 
 
 class TestDriverRegistry:
@@ -82,7 +82,7 @@ class TestMockDehumidifier:
         # Set humidity high
         driver._dps["16"] = 80
         readings = [driver.poll().metrics["humidity_current"] for _ in range(20)]
-        # With target=30 and current=80, drift should always be -1 so readings should decrease
+        # With target=30 and current=80, drift should always be -1 → readings decrease
         assert readings[-1] <= readings[0]
 
 

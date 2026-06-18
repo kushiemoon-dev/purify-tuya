@@ -5,7 +5,7 @@ const W = 300
 const H = 40
 const PAD = 2
 
-export function Sparkline({ deviceId }: { deviceId?: number }) {
+export function Sparkline({ deviceId }: { deviceId: number }) {
   const { humidityHistory } = useDeviceState(deviceId)
 
   const { points, area } = useMemo(() => {

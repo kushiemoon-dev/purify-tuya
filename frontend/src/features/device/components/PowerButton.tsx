@@ -1,8 +1,8 @@
 import { useDeviceState } from '@/shared/hooks/useDeviceState'
 import { useCommand } from '@/shared/hooks/useCommand'
-import { setPower, sendDeviceCommand } from '@/shared/lib/api'
+import { sendDeviceCommand } from '@/shared/lib/api'
 
-export function PowerButton({ deviceId }: { deviceId?: number }) {
+export function PowerButton({ deviceId }: { deviceId: number }) {
   const { state } = useDeviceState(deviceId)
   const { send, isPending } = useCommand(deviceId)
 
@@ -11,10 +11,7 @@ export function PowerButton({ deviceId }: { deviceId?: number }) {
   function toggle() {
     if (!state) return
     const next = !state.switch
-    const fn = deviceId !== undefined
-      ? () => sendDeviceCommand(deviceId, 'set_power', { on: next })
-      : () => setPower(next)
-    send('power', fn, { switch: next })
+    send('power', () => sendDeviceCommand(deviceId, 'set_power', { on: next }), { switch: next })
   }
 
   return (
