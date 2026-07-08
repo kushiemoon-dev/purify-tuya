@@ -315,9 +315,6 @@ await i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 })
 
-export { LOCALES }
-export default i18n
-
 export function cycleLocale(): Locale {
   const current = i18n.language as Locale
   const idx = LOCALES.indexOf(current)

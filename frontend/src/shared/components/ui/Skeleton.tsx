@@ -5,7 +5,7 @@ interface SkeletonProps {
   readonly className?: string
 }
 
-export function Skeleton({ width = '100%', height = '16px', borderRadius = '8px', className = '' }: SkeletonProps) {
+function Skeleton({ width = '100%', height = '16px', borderRadius = '8px', className = '' }: SkeletonProps) {
   return (
     <div
       className={`skeleton ${className}`}
@@ -14,7 +14,7 @@ export function Skeleton({ width = '100%', height = '16px', borderRadius = '8px'
   )
 }
 
-export function CardSkeleton() {
+function CardSkeleton() {
   return (
     <div className="card skeleton-card">
       <div className="skeleton-card__header">

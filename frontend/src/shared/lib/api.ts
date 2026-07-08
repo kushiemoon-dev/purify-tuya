@@ -38,10 +38,6 @@ export function fetchDevices(): Promise<DeviceInfo[]> {
   return request<DeviceInfo[]>(`${V1_BASE}/devices`)
 }
 
-export function fetchDevice(id: number): Promise<DeviceInfo> {
-  return request<DeviceInfo>(`${V1_BASE}/devices/${id}`)
-}
-
 export function createDevice(data: Partial<DeviceInfo> & { name: string }): Promise<DeviceInfo> {
   return post<DeviceInfo>(`${V1_BASE}/devices`, data)
 }
@@ -82,10 +78,6 @@ export function deleteRoom(id: number): Promise<void> {
 
 export function fetchAutomations(): Promise<AutomationInfo[]> {
   return request<AutomationInfo[]>(`${V1_BASE}/automations`)
-}
-
-export function fetchAutomation(id: number): Promise<AutomationInfo> {
-  return request<AutomationInfo>(`${V1_BASE}/automations/${id}`)
 }
 
 export function createAutomation(data: Omit<AutomationInfo, 'id'>): Promise<AutomationInfo> {

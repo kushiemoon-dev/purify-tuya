@@ -1,7 +1,5 @@
 export type Mode = 'manual' | 'laundry' | 'sleep' | 'purify' | 'auto'
 
-export const DEHUMIDIFIER_MODES: Mode[] = ['manual', 'laundry', 'sleep', 'purify']
-export const AIR_PURIFIER_MODES: Mode[] = ['auto', 'sleep', 'manual']
 export const MODES: Mode[] = ['manual', 'laundry', 'sleep', 'purify']
 
 export const TIMER_VALUES = [
@@ -10,11 +8,9 @@ export const TIMER_VALUES = [
   '17h', '18h', '19h', '20h', '21h', '22h', '23h', '24h',
 ] as const
 
-export type TimerValue = typeof TIMER_VALUES[number]
+type DeviceType = 'dehumidifier' | 'air_purifier' | 'unknown'
 
-export type DeviceType = 'dehumidifier' | 'air_purifier' | 'unknown'
-
-export interface DeviceCapabilities {
+interface DeviceCapabilities {
   readonly metrics: readonly string[]
   readonly modes: readonly string[]
   readonly has_timer: boolean
@@ -77,19 +73,19 @@ export type TimeRange = '1h' | '24h' | '7d' | '30d'
 
 export type TriggerType = 'threshold' | 'schedule'
 
-export interface ThresholdTrigger {
+interface ThresholdTrigger {
   readonly device_id: number
   readonly metric: string
   readonly operator: '>' | '>=' | '<' | '<=' | '=='
   readonly value: number
 }
 
-export interface ScheduleTrigger {
+interface ScheduleTrigger {
   readonly time: string
   readonly days?: readonly number[]
 }
 
-export interface DeviceCommandAction {
+interface DeviceCommandAction {
   readonly device_id: number
   readonly command: string
   readonly args?: Record<string, unknown>
@@ -125,10 +121,3 @@ export interface RoomInfo {
   readonly sort_order: number
 }
 
-export interface Settings {
-  device_id: string
-  device_ip: string
-  local_key: string
-  poll_interval: number
-  mock_device: boolean
-}
