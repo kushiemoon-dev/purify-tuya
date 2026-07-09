@@ -9,7 +9,7 @@
 [![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 
-<img src="screenshot.png" alt="Purify screenshot" width="620">
+<img src="docs/screenshot.png" alt="Purify screenshot" width="620">
 
 </div>
 
