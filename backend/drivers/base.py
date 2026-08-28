@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True)
 class DeviceCapabilities:
-    """Describes what a device type can do — used by frontend to adapt UI."""
+    """Describes what a device type can do; used by frontend to adapt UI."""
 
     metrics: tuple[str, ...] = ()
     modes: tuple[str, ...] = ()

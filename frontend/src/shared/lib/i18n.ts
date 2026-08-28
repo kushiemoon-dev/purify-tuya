@@ -15,7 +15,7 @@ const resources = {
   fr: {
     translation: {
       status: { on: 'En marche', off: 'Eteint', connected: 'Connecte', disconnected: 'Deconnecte' },
-      offline: { banner: 'Connexion perdue — reconnexion...' },
+      offline: { banner: 'Connexion perdue, reconnexion...' },
       loading: "En attente de l'appareil...",
       gauge: { label: 'Humidite' },
       humidity: { target: 'Humidite cible' },
@@ -113,7 +113,7 @@ const resources = {
   en: {
     translation: {
       status: { on: 'Running', off: 'Off', connected: 'Connected', disconnected: 'Disconnected' },
-      offline: { banner: 'Connection lost — reconnecting...' },
+      offline: { banner: 'Connection lost, reconnecting...' },
       loading: 'Waiting for device...',
       gauge: { label: 'Humidity' },
       humidity: { target: 'Target humidity' },
@@ -211,7 +211,7 @@ const resources = {
   de: {
     translation: {
       status: { on: 'Läuft', off: 'Aus', connected: 'Verbunden', disconnected: 'Getrennt' },
-      offline: { banner: 'Verbindung verloren — Neuverbindung...' },
+      offline: { banner: 'Verbindung verloren, Neuverbindung...' },
       loading: 'Warte auf Gerät...',
       gauge: { label: 'Feuchtigkeit' },
       humidity: { target: 'Ziel-Feuchtigkeit' },

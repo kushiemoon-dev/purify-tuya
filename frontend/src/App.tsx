@@ -38,7 +38,7 @@ function AppContent() {
 
   useEffect(() => {
     if (alreadyOnboarded) return
-    // Check if there are any devices — if not, show onboarding
+    // Check if there are any devices, if not show onboarding
     fetchDevices()
       .then((devices) => {
         if (devices.length === 0) {

@@ -1,4 +1,4 @@
-"""Tests for services.device_manager — non-polling unit tests."""
+"""Tests for services.device_manager: non-polling unit tests."""
 
 import pytest
 

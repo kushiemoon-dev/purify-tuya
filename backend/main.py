@@ -12,11 +12,11 @@ from api.v1.devices import set_manager
 from api.v1.router import v1_router
 from db.engine import async_session, init_db
 from db.models import DeviceModel
-from drivers.air_purifier import (  # noqa: F401 — register drivers
+from drivers.air_purifier import (  # noqa: F401, register drivers
     AirPurifierDriver,
     MockAirPurifierDriver,
 )
-from drivers.dehumidifier import (  # noqa: F401 — register drivers
+from drivers.dehumidifier import (  # noqa: F401, register drivers
     DehumidifierDriver,
     MockDehumidifierDriver,
 )
@@ -214,7 +214,7 @@ async def websocket_endpoint(ws: WebSocket):
         ws_manager.disconnect(ws)
 
 
-# Serve frontend static files under /purify/ (production only — in dev, Vite serves)
+# Serve frontend static files under /purify/ (production only; in dev, Vite serves)
 if not os.environ.get("PURIFY_DEV"):
     frontend_dir = Path(__file__).resolve().parent.parent
     app.mount(

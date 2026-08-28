@@ -90,7 +90,7 @@ async def get_history(
                 for row in result
             ]
 
-        # Aggregated data — bucket by resolution
+        # Aggregated data: bucket by resolution
         bucket_seconds = resolution_minutes * 60
         # SQLite-compatible floor to bucket
         result = await session.execute(

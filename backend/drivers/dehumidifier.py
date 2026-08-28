@@ -110,7 +110,7 @@ class DehumidifierDriver(DeviceDriver):
 
 @register_driver("mock_dehumidifier")
 class MockDehumidifierDriver(DeviceDriver):
-    """Simulated dehumidifier for development — preserves v1 drift behavior."""
+    """Simulated dehumidifier for development, preserves v1 drift behavior."""
 
     def __init__(self, **_: Any) -> None:
         self._dps: dict = {

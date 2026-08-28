@@ -36,7 +36,7 @@ export function AutomationCard({ automation, onUpdate }: AutomationCardProps) {
         <div className="automation-card__info">
           <span className="automation-card__name">{automation.name}</span>
           <span className="automation-card__trigger">
-            {t(`automation.${automation.trigger_type}`)} — {triggerLabel}
+            {t(`automation.${automation.trigger_type}`)}: {triggerLabel}
           </span>
           <span className="automation-card__action">{actionLabel}</span>
         </div>

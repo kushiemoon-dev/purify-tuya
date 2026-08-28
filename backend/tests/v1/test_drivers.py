@@ -1,4 +1,4 @@
-"""Tests for drivers — mock drivers and registry."""
+"""Tests for drivers: mock drivers and registry."""
 
 import pytest
 
