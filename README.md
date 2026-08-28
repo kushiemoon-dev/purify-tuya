@@ -2,7 +2,7 @@
 
 # Purify
 
-### Multi-device local control for Tuya appliances — no cloud required
+### Multi-device local control for Tuya appliances, no cloud required
 
 [![CI](https://img.shields.io/github/actions/workflow/status/kushiemoon-dev/purify-tuya/ci.yml?branch=master&style=flat-square&label=CI)](https://github.com/kushiemoon-dev/purify-tuya/actions)
 [![License](https://img.shields.io/badge/license-MIT-gray?style=flat-square)](LICENSE)
@@ -17,7 +17,7 @@
 
 ## Overview
 
-**Purify** is a self-hosted PWA for controlling Tuya-based appliances (dehumidifiers, air purifiers) over your local network. No cloud account, no internet dependency — just direct LAN communication via the Tuya protocol.
+**Purify** is a self-hosted PWA for controlling Tuya-based appliances (dehumidifiers, air purifiers) over your local network. No cloud account, no internet dependency; just direct LAN communication via the Tuya protocol.
 
 Manage multiple devices from a single dashboard with real-time updates, automation rules, and room organisation.
 
@@ -25,18 +25,18 @@ Manage multiple devices from a single dashboard with real-time updates, automati
 
 ## Features
 
-- **Multi-device** — Add and control multiple Tuya devices from one dashboard
-- **Driver architecture** — Dehumidifier and air purifier drivers with extensible plugin system
-- **Automations** — Threshold-based rules with cooldowns (e.g. "turn on when humidity > 70%")
-- **Rooms** — Group devices by location
-- **Notifications** — Real-time alerts for faults, automations, and device events
-- **History & charts** — Per-device metric history with configurable retention
-- **Real-time WebSocket** — Live state pushed to all connected clients
-- **React + TypeScript** — Modern frontend with Zustand state management
-- **PWA offline** — Installable as a Progressive Web App
-- **i18n** — French, English, and German
-- **Mock mode** — Develop and demo without real hardware
-- **Legacy API** — Single-device v0 API preserved for backward compatibility
+- **Multi-device**: add and control multiple Tuya devices from one dashboard
+- **Driver architecture**: dehumidifier and air purifier drivers with extensible plugin system
+- **Automations**: threshold-based rules with cooldowns (e.g. "turn on when humidity > 70%")
+- **Rooms**: group devices by location
+- **Notifications**: real-time alerts for faults, automations, and device events
+- **History & charts**: per-device metric history with configurable retention
+- **Real-time WebSocket**: live state pushed to all connected clients
+- **React + TypeScript**: modern frontend with Zustand state management
+- **PWA offline**: installable as a Progressive Web App
+- **i18n**: French, English, and German
+- **Mock mode**: develop and demo without real hardware
+- **Legacy API**: single-device v0 API preserved for backward compatibility
 
 ---
 
@@ -185,10 +185,10 @@ Requires `mod_proxy`, `mod_proxy_http`, and `mod_proxy_wstunnel`.
 
 ## Credits
 
-- [tinytuya](https://github.com/jasonacox/tinytuya) — Local Tuya device communication
-- [FastAPI](https://fastapi.tiangolo.com) — Python web framework
-- [React](https://react.dev) — UI library
-- [Vite](https://vitejs.dev) — Frontend build tool
+- [tinytuya](https://github.com/jasonacox/tinytuya): local Tuya device communication
+- [FastAPI](https://fastapi.tiangolo.com): Python web framework
+- [React](https://react.dev): UI library
+- [Vite](https://vitejs.dev): frontend build tool
 
 ---
 
