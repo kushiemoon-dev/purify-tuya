@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/banner.png" alt="Purify Tuya" width="600">
+
 # Purify
 
 ### Multi-device local control for Tuya appliances, no cloud required
